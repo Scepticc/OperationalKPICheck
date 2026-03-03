@@ -1,22 +1,18 @@
-import { neon } from '@neondatabase/serverless';
+import { Pool } from 'pg';
 
-// ─── Neon client factory ──────────────────────────────────────────────────────
-// Uses the HTTP-based driver — stateless, no WebSocket needed, works on all
-// Vercel runtimes (Node.js & Edge).
+// ─── Supabase / pg connection pool ───────────────────────────────────────────
+// Created once per serverless instance and reused across requests.
+// Use the Supabase "Transaction pooler" URL (port 6543) for best compatibility
+// with Vercel serverless functions.
 
-function getSql() {
-  const url = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
-  if (!url) {
-    throw new Error(
-      'No database connection string found. ' +
-        'Set DATABASE_URL (or POSTGRES_URL) in your environment variables.'
-    );
-  }
-  return neon(url);
-}
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL ?? process.env.POSTGRES_URL,
+  ssl: { rejectUnauthorized: false },
+  max: 10,
+});
 
-// Shape returned by db.connect() — matches the pg / @vercel/postgres interface
-// so no API route needs to change.
+// Shape returned by db.connect() — matches the pg interface so all API
+// routes continue to work without changes.
 export interface DbClient {
   query: (
     text: string,
@@ -27,18 +23,17 @@ export interface DbClient {
 
 export const db = {
   async connect(): Promise<DbClient> {
-    const sql = getSql();
+    const client = await pool.connect();
     return {
-      async query(text, values = []) {
-        // fullResults: true gives us { rows, rowCount, command, fields }
-        const result = await sql(text, values, { fullResults: true });
+      async query(text, values) {
+        const result = await client.query(text, values);
         return {
           rows: result.rows as Record<string, unknown>[],
           rowCount: result.rowCount ?? result.rows.length,
         };
       },
       release() {
-        // No-op — the HTTP driver is stateless; connections are not pooled
+        client.release();
       },
     };
   },
