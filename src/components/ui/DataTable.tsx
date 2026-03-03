@@ -35,21 +35,11 @@ interface FetchState<T> {
   error: string | null;
 }
 
-function SortIcon({
-  col,
-  currentCol,
-  dir,
-}: {
-  col: string;
-  currentCol: string;
-  dir: 'asc' | 'desc';
-}) {
-  if (col !== currentCol) return <ChevronsUpDown className="w-3.5 h-3.5 opacity-40" />;
-  return dir === 'asc' ? (
-    <ChevronUp className="w-3.5 h-3.5 text-blue-500" />
-  ) : (
-    <ChevronDown className="w-3.5 h-3.5 text-blue-500" />
-  );
+function SortIcon({ col, currentCol, dir }: { col: string; currentCol: string; dir: 'asc' | 'desc' }) {
+  if (col !== currentCol) return <ChevronsUpDown className="w-3 h-3 opacity-30" />;
+  return dir === 'asc'
+    ? <ChevronUp className="w-3 h-3 text-blue-500" />
+    : <ChevronDown className="w-3 h-3 text-blue-500" />;
 }
 
 export default function DataTable<T extends object>({
@@ -58,11 +48,7 @@ export default function DataTable<T extends object>({
   extraParams = {},
 }: DataTableProps<T>) {
   const [state, setState] = useState<FetchState<T>>({
-    data: [],
-    total: 0,
-    totalPages: 0,
-    loading: false,
-    error: null,
+    data: [], total: 0, totalPages: 0, loading: false, error: null,
   });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
@@ -74,49 +60,22 @@ export default function DataTable<T extends object>({
   const fetchData = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        pageSize: String(pageSize),
-        search,
-        sortCol,
-        sortDir,
-        ...extraParams,
-      });
+      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), search, sortCol, sortDir, ...extraParams });
       const res = await fetch(`${fetchUrl}?${params}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      setState({
-        data: json.data ?? [],
-        total: json.total ?? 0,
-        totalPages: json.totalPages ?? 0,
-        loading: false,
-        error: null,
-      });
+      setState({ data: json.data ?? [], total: json.total ?? 0, totalPages: json.totalPages ?? 0, loading: false, error: null });
     } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: String(err),
-      }));
+      setState((prev) => ({ ...prev, loading: false, error: String(err) }));
     }
   }, [fetchUrl, page, pageSize, search, sortCol, sortDir, extraParams]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // Reset to page 1 when extraParams change
-  useEffect(() => {
-    setPage(1);
-  }, [JSON.stringify(extraParams)]); // eslint-disable-line
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { setPage(1); }, [JSON.stringify(extraParams)]); // eslint-disable-line
 
   function handleSort(key: string) {
-    if (sortCol === key) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortCol(key);
-      setSortDir('desc');
-    }
+    if (sortCol === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortCol(key); setSortDir('desc'); }
     setPage(1);
   }
 
@@ -129,8 +88,7 @@ export default function DataTable<T extends object>({
   function renderCell(row: T, col: ColumnDef<T>) {
     if (col.render) return col.render(row);
     const val = row[col.key as keyof T];
-    if (val === null || val === undefined) return <span className="text-slate-400">—</span>;
-    // Date formatting
+    if (val === null || val === undefined) return <span className="text-slate-300 dark:text-slate-700">—</span>;
     if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val) && col.key.toString().includes('date')) {
       return formatDate(val);
     }
@@ -138,7 +96,7 @@ export default function DataTable<T extends object>({
   }
 
   const start = (page - 1) * pageSize + 1;
-  const end = Math.min(page * pageSize, state.total);
+  const end   = Math.min(page * pageSize, state.total);
 
   return (
     <div className="flex flex-col gap-4">
@@ -146,92 +104,88 @@ export default function DataTable<T extends object>({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <form onSubmit={handleSearch} className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-600" />
             <input
-              className="input pl-9 w-72"
+              className="input pl-8 w-64 h-8 py-0 text-sm"
               placeholder="Search..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
           </div>
-          <button type="submit" className="btn-secondary text-sm px-3 py-2">
-            Search
-          </button>
+          <button type="submit" className="btn-secondary h-8 px-3 py-0">Go</button>
           {search && (
             <button
               type="button"
               onClick={() => { setSearch(''); setSearchInput(''); setPage(1); }}
-              className="text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              className="text-xs text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
             >
               Clear
             </button>
           )}
         </form>
-        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-          <span>Rows per page:</span>
+
+        <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-600">
+          <span>Rows:</span>
           <select
-            className="input py-1 pr-8"
+            className="input h-8 py-0 pr-7 text-xs"
             value={pageSize}
             onChange={(e) => { setPageSize(parseInt(e.target.value)); setPage(1); }}
           >
-            {[25, 50, 100, 200].map((n) => (
-              <option key={n} value={n}>{n}</option>
-            ))}
+            {[25, 50, 100, 200].map((n) => <option key={n} value={n}>{n}</option>)}
           </select>
         </div>
       </div>
 
       {/* Table */}
-      <div className="card overflow-hidden">
+      <div className="bg-white dark:bg-[#0c1829] rounded-xl border border-slate-200 dark:border-[#162035] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
-              <tr>
+            <thead>
+              <tr className="border-b border-slate-100 dark:border-[#162035] bg-slate-50 dark:bg-[#0a1628]">
                 {columns.map((col) => (
                   <th
                     key={String(col.key)}
                     className={cn('table-th', col.width && `w-${col.width}`)}
                     onClick={() => col.sortable !== false && handleSort(String(col.key))}
                   >
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       {col.header}
                       {col.sortable !== false && (
-                        <SortIcon
-                          col={String(col.key)}
-                          currentCol={sortCol}
-                          dir={sortDir}
-                        />
+                        <SortIcon col={String(col.key)} currentCol={sortCol} dir={sortDir} />
                       )}
                     </div>
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#0f1e36]">
               {state.loading ? (
                 <tr>
-                  <td colSpan={columns.length} className="py-12 text-center">
-                    <div className="flex items-center justify-center gap-2 text-slate-400">
-                      <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                      Loading...
+                  <td colSpan={columns.length} className="py-16 text-center">
+                    <div className="flex items-center justify-center gap-2 text-slate-400 dark:text-slate-600">
+                      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm">Loading…</span>
                     </div>
                   </td>
                 </tr>
               ) : state.error ? (
                 <tr>
-                  <td colSpan={columns.length} className="py-12 text-center text-red-500">
+                  <td colSpan={columns.length} className="py-16 text-center text-sm text-red-500">
                     Error: {state.error}
                   </td>
                 </tr>
               ) : state.data.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="py-12 text-center text-slate-400">
-                    No data found
+                  <td colSpan={columns.length} className="py-16 text-center text-sm text-slate-400 dark:text-slate-700">
+                    No results found
                   </td>
                 </tr>
               ) : (
                 state.data.map((row, i) => (
-                  <tr key={((row as Record<string, unknown>).id as string | number) ?? i} className="table-row">
+                  <tr
+                    key={((row as Record<string, unknown>).id as string | number) ?? i}
+                    className="table-row"
+                  >
                     {columns.map((col) => (
                       <td key={String(col.key)} className="table-td">
                         {renderCell(row, col)}
@@ -245,44 +199,29 @@ export default function DataTable<T extends object>({
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {state.total > 0
-              ? `Showing ${start}–${end} of ${state.total.toLocaleString()} rows`
-              : 'No results'}
+        <div className="flex items-center justify-between px-4 py-2.5 border-t border-slate-100 dark:border-[#0f1e36] bg-slate-50/50 dark:bg-[#0a1628]">
+          <p className="text-xs text-slate-400 dark:text-slate-600 tabular-nums">
+            {state.total > 0 ? `${start.toLocaleString()}–${end.toLocaleString()} of ${state.total.toLocaleString()}` : 'No results'}
           </p>
-          <div className="flex items-center gap-1">
-            <button
-              className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40"
-              onClick={() => setPage(1)}
-              disabled={page === 1}
-            >
-              <ChevronsLeft className="w-4 h-4" />
-            </button>
-            <button
-              className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-sm px-2 text-slate-600 dark:text-slate-300">
-              Page {page} of {state.totalPages || 1}
+          <div className="flex items-center gap-0.5">
+            {[
+              { icon: <ChevronsLeft className="w-3.5 h-3.5" />,  action: () => setPage(1),                              disabled: page === 1 },
+              { icon: <ChevronLeft  className="w-3.5 h-3.5" />,  action: () => setPage((p) => Math.max(1, p - 1)),      disabled: page === 1 },
+              { icon: <ChevronRight className="w-3.5 h-3.5" />,  action: () => setPage((p) => Math.min(state.totalPages, p + 1)), disabled: page >= state.totalPages },
+              { icon: <ChevronsRight className="w-3.5 h-3.5" />, action: () => setPage(state.totalPages),               disabled: page >= state.totalPages },
+            ].map((btn, i) => (
+              <button
+                key={i}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 dark:text-slate-600 hover:bg-slate-200 dark:hover:bg-[#0f1e36] hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                onClick={btn.action}
+                disabled={btn.disabled}
+              >
+                {btn.icon}
+              </button>
+            ))}
+            <span className="text-xs text-slate-400 dark:text-slate-600 px-2 tabular-nums">
+              {page} / {state.totalPages || 1}
             </span>
-            <button
-              className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40"
-              onClick={() => setPage((p) => Math.min(state.totalPages, p + 1))}
-              disabled={page >= state.totalPages}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <button
-              className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40"
-              onClick={() => setPage(state.totalPages)}
-              disabled={page >= state.totalPages}
-            >
-              <ChevronsRight className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </div>

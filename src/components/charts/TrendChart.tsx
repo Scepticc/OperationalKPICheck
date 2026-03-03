@@ -22,9 +22,9 @@ interface TrendChartProps {
 }
 
 const dateFormats: Record<string, string> = {
-  day: 'dd MMM',
-  week: "'W'w MMM",
-  month: 'MMM yyyy',
+  day:   'dd MMM',
+  week:  "'W'w MMM",
+  month: 'MMM yy',
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,13 +36,15 @@ function CustomTooltip({ active, payload, label, granularity }: any) {
   } catch {}
 
   return (
-    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg p-3 text-sm">
-      <p className="font-semibold text-slate-700 dark:text-slate-200 mb-2">{formattedDate}</p>
+    <div className="bg-white dark:bg-[#0c1829] border border-slate-200 dark:border-[#1d2f4d] rounded-xl shadow-2xl p-3 text-sm">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-2">{formattedDate}</p>
       {payload.map((p: { name: string; value: number; color: string }) => (
-        <div key={p.name} className="flex items-center gap-2">
-          <div className="w-3 h-0.5 rounded" style={{ backgroundColor: p.color }} />
-          <span className="text-slate-500 dark:text-slate-400">{p.name}:</span>
-          <span className="font-semibold text-slate-800 dark:text-slate-100">
+        <div key={p.name} className="flex items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
+            <span className="text-xs text-slate-500 dark:text-slate-400">{p.name}</span>
+          </div>
+          <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
             {p.value.toLocaleString('en-US', { maximumFractionDigits: 1 })}
           </span>
         </div>
@@ -59,52 +61,54 @@ export default function TrendChart({
   valueLabel = 'Cartons',
 }: TrendChartProps) {
   const fmt = dateFormats[granularity] ?? 'dd MMM';
-
   const formatted = data.map((d) => ({
     ...d,
     period: d.period,
-    label: (() => {
-      try { return format(parseISO(d.period), fmt); } catch { return d.period; }
-    })(),
+    label: (() => { try { return format(parseISO(d.period), fmt); } catch { return d.period; } })(),
   }));
 
   if (!data.length) {
     return (
       <div className="card p-5">
-        <p className="font-semibold text-slate-700 dark:text-slate-200 mb-4">{title}</p>
-        <div className="h-48 flex items-center justify-center text-slate-400 text-sm">
-          No data available
-        </div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-4">{title}</p>
+        <div className="h-48 flex items-center justify-center text-slate-400 dark:text-slate-700 text-sm">No data available</div>
       </div>
     );
   }
 
   return (
     <div className="card p-5">
-      <p className="font-semibold text-slate-700 dark:text-slate-200 mb-4">{title}</p>
-      <ResponsiveContainer width="100%" height={240}>
-        <LineChart data={formatted} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
+      <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-5">{title}</p>
+      <ResponsiveContainer width="100%" height={220}>
+        <LineChart data={formatted} margin={{ top: 4, right: 8, left: -8, bottom: 0 }}>
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="currentColor"
+            className="text-slate-100 dark:text-[#0f1e36]"
+            vertical={false}
+          />
           <XAxis
             dataKey="label"
-            tick={{ fontSize: 11, fill: '#94a3b8' }}
+            tick={{ fontSize: 10, fill: '#64748b' }}
             axisLine={false}
             tickLine={false}
+            tickMargin={8}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: '#94a3b8' }}
+            tick={{ fontSize: 10, fill: '#64748b' }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}
+            width={40}
           />
           <Tooltip
             content={<CustomTooltip granularity={granularity} />}
-            cursor={{ stroke: '#3b82f6', strokeWidth: 1, strokeDasharray: '4 4' }}
+            cursor={{ stroke: '#3b82f6', strokeWidth: 1, strokeDasharray: '4 4', strokeOpacity: 0.5 }}
           />
           <Legend
-            wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+            wrapperStyle={{ fontSize: 11, paddingTop: 12, color: '#64748b' }}
             iconType="circle"
-            iconSize={8}
+            iconSize={6}
           />
           <Line
             type="monotone"
@@ -113,7 +117,7 @@ export default function TrendChart({
             stroke="#3b82f6"
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 5, fill: '#3b82f6' }}
+            activeDot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
           />
           <Line
             type="monotone"
@@ -122,8 +126,8 @@ export default function TrendChart({
             stroke="#10b981"
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 5, fill: '#10b981' }}
-            strokeDasharray="4 4"
+            activeDot={{ r: 4, fill: '#10b981', strokeWidth: 0 }}
+            strokeDasharray="5 3"
           />
         </LineChart>
       </ResponsiveContainer>
