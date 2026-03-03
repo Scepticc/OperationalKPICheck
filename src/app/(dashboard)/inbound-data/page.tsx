@@ -17,8 +17,8 @@ const COLUMNS: ColumnDef<InboundRow>[] = [
   { key: 'unloading_date', header: 'Unloading Date' },
   { key: 'planned_arrival_date', header: 'Planned Arrival Date' },
   { key: 'planned_arrival_time', header: 'Planned Arrival Time' },
-  { key: 'premises_in_date', header: 'Premisses In Date' },
-  { key: 'premises_in_time', header: 'Premisses In Time' },
+  { key: 'premises_in_date', header: 'Premises In Date' },
+  { key: 'premises_in_time', header: 'Premises In Time' },
   { key: 'gate_in_date', header: 'Gate In Date' },
   { key: 'gate_in_time', header: 'Gate In Time' },
   { key: 'unloading_start_date', header: 'Unloading Start Date' },
@@ -27,8 +27,8 @@ const COLUMNS: ColumnDef<InboundRow>[] = [
   { key: 'unloading_end_time', header: 'Unloading End Time' },
   { key: 'gate_out_date', header: 'Gate Out Date' },
   { key: 'gate_out_time', header: 'Gate Out Time' },
-  { key: 'premises_out_date', header: 'Premisses Out Date' },
-  { key: 'premises_out_time', header: 'Premisses Out Time' },
+  { key: 'premises_out_date', header: 'Premises Out Date' },
+  { key: 'premises_out_time', header: 'Premises Out Time' },
   { key: 'sortkeys', header: 'Sortkeys' },
   { key: 'pallet_count', header: 'Pallet Count' },
   { key: 'us_pallet_count', header: 'US Pallet Count' },
@@ -42,7 +42,7 @@ const COLUMNS: ColumnDef<InboundRow>[] = [
         <span className={cn('badge', row.arrival_status === 'Y' ? 'badge-green' : 'badge-gray')}>
           {row.arrival_status}
         </span>
-      ) : <span className="text-slate-400">—</span>,
+      ) : <span className="text-gray-400">{'\u2014'}</span>,
   },
   {
     key: 'pallet_status',
@@ -52,7 +52,7 @@ const COLUMNS: ColumnDef<InboundRow>[] = [
         <span className={cn('badge', row.pallet_status === 'Y' ? 'badge-green' : 'badge-gray')}>
           {row.pallet_status}
         </span>
-      ) : <span className="text-slate-400">—</span>,
+      ) : <span className="text-gray-400">{'\u2014'}</span>,
   },
   {
     key: 'locate_status',
@@ -62,7 +62,7 @@ const COLUMNS: ColumnDef<InboundRow>[] = [
         <span className={cn('badge', row.locate_status === 'Y' ? 'badge-green' : 'badge-gray')}>
           {row.locate_status}
         </span>
-      ) : <span className="text-slate-400">—</span>,
+      ) : <span className="text-gray-400">{'\u2014'}</span>,
   },
   { key: 'locate_date', header: 'Locate Date' },
   { key: 'locate_time', header: 'Locate Time' },
@@ -74,7 +74,7 @@ const COLUMNS: ColumnDef<InboundRow>[] = [
         <span className={cn('badge', row.decon_in === 'Y' ? 'badge-green' : 'badge-gray')}>
           {row.decon_in}
         </span>
-      ) : <span className="text-slate-400">—</span>,
+      ) : <span className="text-gray-400">{'\u2014'}</span>,
   },
   { key: 'decon_in_date', header: 'Decon In Date' },
   { key: 'decon_in_time', header: 'Decon In Time' },

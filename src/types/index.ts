@@ -208,7 +208,15 @@ export interface TableSort {
 
 export interface ImportResult {
   inserted: number;
+  updated: number;
   skipped: number;
   total: number;
   errors: string[];
+  duplicates: DuplicateRecord[];
+}
+
+export interface DuplicateRecord {
+  row: number;
+  key: string;
+  action: 'updated' | 'skipped';
 }

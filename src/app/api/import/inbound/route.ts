@@ -8,10 +8,12 @@ import {
   INBOUND_DATE_COLS,
   parseCell,
 } from '@/lib/utils';
-import { ImportResult } from '@/types';
+import { ImportResult, DuplicateRecord } from '@/types';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
+
+const UNIQUE_KEY_COLS = ['shipment', 'container', 'unloading_date'];
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,7 +41,9 @@ export async function POST(req: NextRequest) {
 
     const rows = parsed.data;
     if (rows.length === 0) {
-      return NextResponse.json({ inserted: 0, skipped: 0, total: 0, errors: [] });
+      return NextResponse.json({
+        inserted: 0, updated: 0, skipped: 0, total: 0, errors: [], duplicates: [],
+      });
     }
 
     const rawHeaders = Object.keys(rows[0]);
@@ -60,13 +64,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Build the UPDATE SET clause for non-key columns
+    const updateCols = dbCols.filter((c) => !UNIQUE_KEY_COLS.includes(c));
+    const updateSet = updateCols.length > 0
+      ? updateCols.map((c) => `${c} = EXCLUDED.${c}`).join(', ')
+      : null;
+
     const client = await db.connect();
     let inserted = 0;
+    let updated = 0;
     const errors: string[] = [];
+    const duplicates: DuplicateRecord[] = [];
 
     try {
       const colList = dbCols.join(', ');
       const placeholders = dbCols.map((_, i) => `$${i + 1}`).join(', ');
+
+      const conflictAction = updateSet
+        ? `ON CONFLICT (shipment, container, unloading_date) DO UPDATE SET ${updateSet} RETURNING (xmax = 0) AS was_inserted`
+        : `ON CONFLICT (shipment, container, unloading_date) DO NOTHING`;
 
       for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
         const row = rows[rowIdx];
@@ -80,14 +96,38 @@ export async function POST(req: NextRequest) {
           values.push(parseCell(rawVal, dbCol, INBOUND_NUMERIC_COLS, INBOUND_DATE_COLS));
         }
 
+        const keyParts: string[] = [];
+        for (const kc of UNIQUE_KEY_COLS) {
+          const idx = dbCols.indexOf(kc);
+          if (idx >= 0) keyParts.push(`${kc}=${values[idx] ?? 'NULL'}`);
+        }
+        const keyStr = keyParts.join(', ');
+
         try {
           const result = await client.query(
             `INSERT INTO inbound_shipments (${colList})
              VALUES (${placeholders})
-             ON CONFLICT (shipment, container, unloading_date) DO NOTHING`,
+             ${conflictAction}`,
             values
           );
-          inserted += result.rowCount ?? 0;
+
+          if (updateSet) {
+            if (result.rows.length > 0) {
+              const wasInserted = result.rows[0].was_inserted;
+              if (wasInserted) {
+                inserted++;
+              } else {
+                updated++;
+                duplicates.push({ row: rowIdx + 2, key: keyStr, action: 'updated' });
+              }
+            }
+          } else {
+            if ((result.rowCount ?? 0) > 0) {
+              inserted++;
+            } else {
+              duplicates.push({ row: rowIdx + 2, key: keyStr, action: 'skipped' });
+            }
+          }
         } catch (rowErr) {
           errors.push(`Row ${rowIdx + 2}: ${String(rowErr)}`);
         }
@@ -98,9 +138,11 @@ export async function POST(req: NextRequest) {
 
     const result: ImportResult = {
       inserted,
-      skipped: rows.length - inserted - errors.length,
+      updated,
+      skipped: rows.length - inserted - updated - errors.length,
       total: rows.length,
-      errors: errors.slice(0, 10),
+      errors: errors.slice(0, 20),
+      duplicates: duplicates.slice(0, 100),
     };
 
     return NextResponse.json(result);

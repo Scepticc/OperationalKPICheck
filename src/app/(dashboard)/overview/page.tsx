@@ -8,7 +8,15 @@ import TrendChart from '@/components/charts/TrendChart';
 import { PageLoading } from '@/components/ui/LoadingSpinner';
 import Link from 'next/link';
 import { formatNumber, formatPercent, formatMinutes } from '@/lib/utils';
-import { ArrowRight, TrendingUp, TrendingDown, Package, BarChart3 } from 'lucide-react';
+import {
+  ArrowRight,
+  TrendingUp,
+  TrendingDown,
+  Package,
+  BarChart3,
+  Upload,
+  Table2,
+} from 'lucide-react';
 
 export default function OverviewPage() {
   const { globalStartDate, globalEndDate } = useApp();
@@ -35,29 +43,28 @@ export default function OverviewPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Overview" />
+      <Header title="Executive Overview" />
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-8">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {loading ? <PageLoading /> : (
           <>
-            {/* ── Outbound ─────────────────────────────────── */}
+            {/* Outbound Section */}
             <section>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-1.5 h-5 rounded-full bg-blue-500" />
-                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Outbound</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-600 ml-1">Shipments</span>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-4 rounded-full bg-blue-600" />
+                  <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Outbound Operations</h2>
                 </div>
                 <Link
                   href="/outbound-kpis"
-                  className="flex items-center gap-1 text-xs font-medium text-blue-500 hover:text-blue-400 transition-colors"
+                  className="flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                 >
-                  Full report <ArrowRight className="w-3.5 h-3.5" />
+                  View details <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-                <KPICard title="Shipments"       kpi={outKpis?.row_count}           format={formatNumber}  icon={<TrendingUp className="w-3.5 h-3.5" />} accentColor="blue" />
+                <KPICard title="Shipments"       kpi={outKpis?.row_count}           format={formatNumber}  icon={<Package className="w-3.5 h-3.5" />} accentColor="blue" />
                 <KPICard title="Cartons"         kpi={outKpis?.total_cartons}        format={formatNumber}  accentColor="blue" />
                 <KPICard title="Pallets"         kpi={outKpis?.total_pallets}        format={formatNumber}  accentColor="blue" />
                 <KPICard title="Return Rate"     kpi={outKpis?.return_rate}          format={formatPercent} higherIsBetter={false} accentColor="amber" />
@@ -75,24 +82,23 @@ export default function OverviewPage() {
               )}
             </section>
 
-            {/* ── Inbound ──────────────────────────────────── */}
+            {/* Inbound Section */}
             <section>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-1.5 h-5 rounded-full bg-emerald-500" />
-                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Inbound</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-600 ml-1">Shipments</span>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-4 rounded-full bg-emerald-600" />
+                  <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Inbound Operations</h2>
                 </div>
                 <Link
                   href="/inbound-kpis"
-                  className="flex items-center gap-1 text-xs font-medium text-emerald-500 hover:text-emerald-400 transition-colors"
+                  className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
-                  Full report <ArrowRight className="w-3.5 h-3.5" />
+                  View details <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-                <KPICard title="Shipments"       kpi={inKpis?.row_count}           format={formatNumber}  icon={<TrendingDown className="w-3.5 h-3.5" />} accentColor="emerald" />
+                <KPICard title="Shipments"       kpi={inKpis?.row_count}           format={formatNumber}  icon={<Package className="w-3.5 h-3.5" />} accentColor="emerald" />
                 <KPICard title="Cartons Recv."   kpi={inKpis?.total_cartons}       format={formatNumber}  accentColor="emerald" />
                 <KPICard title="Pallets Recv."   kpi={inKpis?.total_pallets}       format={formatNumber}  accentColor="emerald" />
                 <KPICard title="On-time Arrival" kpi={inKpis?.on_time_arrival_rate} format={formatPercent} accentColor="emerald" />
@@ -110,27 +116,27 @@ export default function OverviewPage() {
               )}
             </section>
 
-            {/* ── Quick links ───────────────────────────────── */}
+            {/* Quick Navigation */}
             <section>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-700 mb-3">Quick access</p>
+              <p className="section-title mb-3">Quick Access</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { href: '/outbound-kpis', label: 'Outbound KPIs',  desc: 'Full outbound metrics',     icon: <TrendingUp className="w-4 h-4" />,  color: 'text-blue-400',    border: 'hover:border-blue-500/30' },
-                  { href: '/inbound-kpis',  label: 'Inbound KPIs',   desc: 'Full inbound metrics',      icon: <TrendingDown className="w-4 h-4" />, color: 'text-emerald-400', border: 'hover:border-emerald-500/30' },
-                  { href: '/outbound-data', label: 'Outbound Data',  desc: 'Browse outbound records',   icon: <BarChart3 className="w-4 h-4" />,   color: 'text-violet-400',  border: 'hover:border-violet-500/30' },
-                  { href: '/import',        label: 'Import Data',    desc: 'Upload CSV files',          icon: <Package className="w-4 h-4" />,     color: 'text-amber-400',   border: 'hover:border-amber-500/30' },
+                  { href: '/outbound-kpis', label: 'Outbound KPIs',  desc: 'Full outbound metrics',     icon: <TrendingUp className="w-4 h-4" />,  color: 'text-blue-600 dark:text-blue-400',    hoverBorder: 'hover:border-blue-300 dark:hover:border-blue-800' },
+                  { href: '/inbound-kpis',  label: 'Inbound KPIs',   desc: 'Full inbound metrics',      icon: <TrendingDown className="w-4 h-4" />, color: 'text-emerald-600 dark:text-emerald-400', hoverBorder: 'hover:border-emerald-300 dark:hover:border-emerald-800' },
+                  { href: '/outbound-data', label: 'Outbound Data',  desc: 'Browse outbound records',   icon: <Table2 className="w-4 h-4" />,      color: 'text-violet-600 dark:text-violet-400',  hoverBorder: 'hover:border-violet-300 dark:hover:border-violet-800' },
+                  { href: '/import',        label: 'Import Data',    desc: 'Upload CSV files',          icon: <Upload className="w-4 h-4" />,      color: 'text-amber-600 dark:text-amber-400',   hoverBorder: 'hover:border-amber-300 dark:hover:border-amber-800' },
                 ].map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`card p-4 flex items-start gap-3 transition-all duration-150 hover:shadow-md dark:hover:shadow-none ${item.border}`}
+                    className={`card p-3.5 flex items-start gap-3 transition-colors duration-100 ${item.hoverBorder}`}
                   >
                     <div className={`mt-0.5 shrink-0 ${item.color}`}>{item.icon}</div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{item.label}</p>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-600 mt-0.5 truncate">{item.desc}</p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{item.label}</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5 truncate">{item.desc}</p>
                     </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-700 ml-auto shrink-0 mt-0.5" />
+                    <ArrowRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-700 ml-auto shrink-0 mt-0.5" />
                   </Link>
                 ))}
               </div>
