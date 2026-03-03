@@ -8,7 +8,9 @@ import { Pool } from 'pg';
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL ?? process.env.POSTGRES_URL,
   ssl: { rejectUnauthorized: false },
-  max: 10,
+  max: 5,
+  connectionTimeoutMillis: 8000,
+  idleTimeoutMillis: 20000,
 });
 
 // Shape returned by db.connect() — matches the pg interface so all API
