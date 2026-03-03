@@ -54,7 +54,7 @@ export default function OutboundKPIsPage() {
   useEffect(() => {
     fetch('/api/outbound/filters')
       .then((r) => r.json())
-      .then((d) => setFilterOptions(d))
+      .then((d) => { if (!d.error) setFilterOptions(d); })
       .catch(console.error);
   }, []);
 
@@ -98,7 +98,7 @@ export default function OutboundKPIsPage() {
     {
       key: 'customer',
       label: 'Customer',
-      options: filterOptions.customers,
+      options: filterOptions.customers ?? [],
       value: outboundFilters.customer ?? '',
       onChange: (v: string) => setOutboundFilters({ customer: v }),
     },
