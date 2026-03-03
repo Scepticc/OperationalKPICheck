@@ -52,13 +52,21 @@ export async function POST(req: NextRequest) {
       if (dbCol) headerMap[h] = dbCol;
     }
 
+    const dbCols = [...new Set(Object.values(headerMap))];
+    if (dbCols.length === 0) {
+      return NextResponse.json(
+        {
+          error: `No matching columns found. CSV headers detected: ${rawHeaders.slice(0, 8).join(', ')}`,
+        },
+        { status: 400 }
+      );
+    }
+
     const client = await db.connect();
     let inserted = 0;
     const errors: string[] = [];
 
     try {
-      // DB columns used
-      const dbCols = [...new Set(Object.values(headerMap))];
       const colList = dbCols.join(', ');
       const placeholders = dbCols.map((_, i) => `$${i + 1}`).join(', ');
 

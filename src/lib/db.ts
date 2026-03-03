@@ -138,6 +138,30 @@ export async function initDb() {
         UNIQUE(shipment, container, unloading_date)
       )
     `);
+
+    // Migrate: add any columns that may be missing from older table versions
+    const outboundMigrations = [
+      `ALTER TABLE outbound_shipments ADD COLUMN IF NOT EXISTS dock VARCHAR(50)`,
+      `ALTER TABLE outbound_shipments ADD COLUMN IF NOT EXISTS luik_shipment VARCHAR(100)`,
+      `ALTER TABLE outbound_shipments ADD COLUMN IF NOT EXISTS actual_loading_type VARCHAR(100)`,
+      `ALTER TABLE outbound_shipments ADD COLUMN IF NOT EXISTS decon_out_date DATE`,
+      `ALTER TABLE outbound_shipments ADD COLUMN IF NOT EXISTS decon_out_time VARCHAR(10)`,
+      `ALTER TABLE outbound_shipments ADD COLUMN IF NOT EXISTS est_pickup_date DATE`,
+      `ALTER TABLE outbound_shipments ADD COLUMN IF NOT EXISTS est_pickup_time VARCHAR(10)`,
+    ];
+    const inboundMigrations = [
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS decon_in_plt_num VARCHAR(100)`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS sortkeys VARCHAR(255)`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS arrival_status VARCHAR(10)`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS pallet_status VARCHAR(10)`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS locate_status VARCHAR(10)`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS locate_date DATE`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS locate_time VARCHAR(10)`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS decon_in VARCHAR(10)`,
+    ];
+    for (const sql of [...outboundMigrations, ...inboundMigrations]) {
+      await client.query(sql);
+    }
   } finally {
     client.release();
   }

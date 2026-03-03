@@ -41,11 +41,18 @@ export default function CSVImporter({
         method: 'POST',
         body: formData,
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: Record<string, unknown>;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        setState({ status: 'error', message: `Server error: ${text.slice(0, 300)}` });
+        return;
+      }
       if (!res.ok) {
-        setState({ status: 'error', message: data.error ?? 'Import failed' });
+        setState({ status: 'error', message: (data.error as string) ?? 'Import failed' });
       } else {
-        setState({ status: 'success', result: data as ImportResult });
+        setState({ status: 'success', result: data as unknown as ImportResult });
       }
     } catch (err) {
       setState({ status: 'error', message: String(err) });
