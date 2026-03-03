@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
         `SELECT COUNT(*) AS total FROM outbound_shipments ${where}`,
         params
       );
-      const total = parseInt(countResult.rows[0]?.total ?? '0');
+      const total = parseInt(String(countResult.rows[0]?.total ?? 0));
 
       const dataResult = await client.query(
         `SELECT * FROM outbound_shipments ${where}

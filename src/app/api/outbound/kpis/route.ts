@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, initDb } from '@/lib/db';
+import { db, initDb, DbClient } from '@/lib/db';
 import { getPreviousPeriod, calcChangePercent } from '@/lib/utils';
 import { KPIValue } from '@/types';
 
@@ -31,7 +31,7 @@ function buildFilters(
 }
 
 async function computeKPIs(
-  client: { query: (sql: string, params?: (string | number)[]) => Promise<{ rows: Record<string, string>[] }> },
+  client: DbClient,
   startDate: string,
   endDate: string,
   customer: string,
@@ -120,7 +120,7 @@ async function computeKPIs(
 }
 
 async function computeTrends(
-  client: { query: (sql: string, params?: (string | number)[]) => Promise<{ rows: Record<string, string>[] }> },
+  client: DbClient,
   startDate: string,
   endDate: string,
   customer: string,
@@ -183,9 +183,11 @@ async function computeTrends(
   };
 }
 
-function makeKPIValue(current: string | null, previous: string | null): KPIValue {
-  const c = current !== null && current !== '' ? parseFloat(current) : null;
-  const p = previous !== null && previous !== '' ? parseFloat(previous) : null;
+function makeKPIValue(current: unknown, previous: unknown): KPIValue {
+  const toNum = (v: unknown) =>
+    v !== null && v !== undefined && v !== '' ? parseFloat(String(v)) : null;
+  const c = toNum(current);
+  const p = toNum(previous);
   return { current: c, previous: p, change: calcChangePercent(c, p) };
 }
 

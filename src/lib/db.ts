@@ -1,4 +1,48 @@
-import { db } from '@vercel/postgres';
+import { neon } from '@neondatabase/serverless';
+
+// ─── Neon client factory ──────────────────────────────────────────────────────
+// Uses the HTTP-based driver — stateless, no WebSocket needed, works on all
+// Vercel runtimes (Node.js & Edge).
+
+function getSql() {
+  const url = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
+  if (!url) {
+    throw new Error(
+      'No database connection string found. ' +
+        'Set DATABASE_URL (or POSTGRES_URL) in your environment variables.'
+    );
+  }
+  return neon(url);
+}
+
+// Shape returned by db.connect() — matches the pg / @vercel/postgres interface
+// so no API route needs to change.
+export interface DbClient {
+  query: (
+    text: string,
+    values?: (string | number | null | undefined)[]
+  ) => Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
+  release: () => void;
+}
+
+export const db = {
+  async connect(): Promise<DbClient> {
+    const sql = getSql();
+    return {
+      async query(text, values = []) {
+        // fullResults: true gives us { rows, rowCount, command, fields }
+        const result = await sql(text, values, { fullResults: true });
+        return {
+          rows: result.rows as Record<string, unknown>[],
+          rowCount: result.rowCount ?? result.rows.length,
+        };
+      },
+      release() {
+        // No-op — the HTTP driver is stateless; connections are not pooled
+      },
+    };
+  },
+};
 
 // ─── Database initialization ──────────────────────────────────────────────────
 
@@ -148,5 +192,3 @@ export const MINUTES_BETWEEN = (startExpr: string, endExpr: string) => `
     ELSE NULL
   END
 `;
-
-export { db };
