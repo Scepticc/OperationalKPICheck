@@ -124,7 +124,7 @@ export default function InboundKPIsPage() {
         {loading ? (
           <PageLoading />
         ) : error ? (
-          <div className="card p-6 text-center text-red-500 text-sm">Error: {error}</div>
+          <div className="card p-6 text-center text-red-400 text-sm">Error: {error}</div>
         ) : (
           <>
             {/* Volume KPIs */}
@@ -136,26 +136,26 @@ export default function InboundKPIsPage() {
                   kpi={kpis?.row_count}
                   format={(v) => formatNumber(v)}
                   icon={<Package className="w-4 h-4" />}
-                  accentColor="emerald"
+                  accentColor="cyan"
                 />
                 <KPICard
                   title="Total Cartons Received"
                   kpi={kpis?.total_cartons}
                   format={(v) => formatNumber(v)}
                   icon={<Layers className="w-4 h-4" />}
-                  accentColor="emerald"
+                  accentColor="cyan"
                 />
                 <KPICard
                   title="Total Pallets Received"
                   kpi={kpis?.total_pallets}
                   format={(v) => formatNumber(v)}
-                  accentColor="emerald"
+                  accentColor="cyan"
                 />
                 <KPICard
                   title="Avg Cartons / Shipment"
                   kpi={kpis?.avg_cartons_per_shipment}
                   format={(v) => formatNumber(v, 1)}
-                  accentColor="emerald"
+                  accentColor="cyan"
                 />
               </div>
             </section>
@@ -170,7 +170,7 @@ export default function InboundKPIsPage() {
                   format={(v) => formatPercent(v)}
                   icon={<CheckCircle className="w-4 h-4" />}
                   description="Premises In <= Planned Arrival"
-                  accentColor="emerald"
+                  accentColor="cyan"
                 />
                 <KPICard
                   title="Arrival Status"
@@ -178,7 +178,7 @@ export default function InboundKPIsPage() {
                   format={(v) => formatPercent(v)}
                   icon={<ShieldCheck className="w-4 h-4" />}
                   description="% Arrival Status = Y"
-                  accentColor="emerald"
+                  accentColor="cyan"
                 />
                 <KPICard
                   title="Pallet Status"
@@ -186,7 +186,7 @@ export default function InboundKPIsPage() {
                   format={(v) => formatPercent(v)}
                   icon={<Layers className="w-4 h-4" />}
                   description="% Pallet Status = Y"
-                  accentColor="blue"
+                  accentColor="lime"
                 />
                 <KPICard
                   title="Locate Status"
@@ -194,7 +194,7 @@ export default function InboundKPIsPage() {
                   format={(v) => formatPercent(v)}
                   icon={<MapPin className="w-4 h-4" />}
                   description="% Locate Status = Y"
-                  accentColor="blue"
+                  accentColor="lime"
                 />
                 <KPICard
                   title="Decon Completed"
