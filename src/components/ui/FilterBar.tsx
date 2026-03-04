@@ -22,16 +22,16 @@ export default function FilterBar({ filters, granularity, onGranularityChange, o
   const hasActive = filters.some((f) => f.value !== '') || (granularity && granularity !== 'day');
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2.5">
+    <div className="bg-white border border-gray-200 rounded-lg px-3 py-2.5">
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-1.5 shrink-0">
           <SlidersHorizontal className="w-3.5 h-3.5 text-gray-400" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
             Filters
           </span>
         </div>
 
-        <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 shrink-0" />
+        <div className="w-px h-4 bg-gray-200 shrink-0" />
 
         {filters.map((f) => (
           <div key={f.key} className="relative">
@@ -41,11 +41,11 @@ export default function FilterBar({ filters, granularity, onGranularityChange, o
               title={f.label}
               className={cn(
                 'h-7 pl-2.5 pr-6 text-xs rounded-md border transition-colors duration-100 appearance-none cursor-pointer font-medium',
-                'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
+                'bg-gray-50 text-gray-700',
                 'focus:outline-none focus:ring-1 focus:ring-blue-500/30',
                 f.value
-                  ? 'border-blue-500/50 bg-blue-50 dark:bg-blue-900/15 text-blue-700 dark:text-blue-300'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  ? 'border-blue-500/50 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 hover:border-gray-300'
               )}
             >
               <option value="">{f.label}: All</option>
@@ -70,7 +70,7 @@ export default function FilterBar({ filters, granularity, onGranularityChange, o
         ))}
 
         {onGranularityChange && (
-          <div className="flex items-center rounded-md border border-gray-200 dark:border-gray-700 overflow-hidden h-7 shrink-0">
+          <div className="flex items-center rounded-md border border-gray-200 overflow-hidden h-7 shrink-0">
             {(['day', 'week', 'month'] as const).map((g) => (
               <button
                 key={g}
@@ -79,7 +79,7 @@ export default function FilterBar({ filters, granularity, onGranularityChange, o
                   'h-full px-2.5 text-[11px] font-semibold capitalize transition-colors duration-100',
                   granularity === g
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    : 'bg-gray-50 text-gray-500 hover:text-gray-700'
                 )}
               >
                 {g}
@@ -91,7 +91,7 @@ export default function FilterBar({ filters, granularity, onGranularityChange, o
         {hasActive && onClear && (
           <button
             onClick={onClear}
-            className="flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors ml-auto"
+            className="flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-red-500 transition-colors ml-auto"
           >
             <X className="w-3 h-3" />
             Clear

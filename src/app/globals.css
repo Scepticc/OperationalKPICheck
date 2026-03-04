@@ -5,151 +5,69 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
-  :root {
-    --bg-primary: #f8f9fb;
-    --bg-secondary: #ffffff;
-    --bg-card: #ffffff;
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    --border: #e5e7eb;
-    --sidebar-bg: #111827;
-    --sidebar-text: #9ca3af;
-    --sidebar-text-active: #ffffff;
-    --sidebar-active-bg: #1f2937;
-    --accent: #2563eb;
-    --accent-light: #dbeafe;
-  }
-
-  .dark {
-    --bg-primary: #0a0f1a;
-    --bg-secondary: #111827;
-    --bg-card: #111827;
-    --text-primary: #f3f4f6;
-    --text-secondary: #9ca3af;
-    --border: #1f2937;
-    --sidebar-bg: #070b14;
-    --sidebar-text: #6b7280;
-    --sidebar-text-active: #f3f4f6;
-    --sidebar-active-bg: #1f2937;
-    --accent: #3b82f6;
-    --accent-light: #1e3a5f;
-  }
-
   * {
-    @apply border-gray-200 dark:border-gray-800;
+    @apply border-gray-200;
   }
-
   body {
-    @apply bg-gray-50 dark:bg-[#0a0f1a] text-gray-900 dark:text-gray-100;
+    @apply bg-gray-50 text-gray-900;
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 }
 
 @layer components {
-  /* ── Cards ─────────────────────────────────────────────── */
   .card {
-    @apply bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none;
+    @apply bg-white rounded-lg border border-gray-200 shadow-sm;
   }
-
-  /* ── Buttons ────────────────────────────────────────────── */
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium px-4 py-2 rounded-md transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed text-sm;
+    @apply bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium px-4 py-2 rounded-md transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed;
   }
-
   .btn-secondary {
-    @apply bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium px-4 py-2 rounded-md border border-gray-200 dark:border-gray-700 transition-colors duration-100 text-sm;
+    @apply bg-white hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-md border border-gray-200 transition-colors text-sm;
   }
-
-  /* ── Inputs ─────────────────────────────────────────────── */
   .input {
-    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 text-sm text-gray-900 dark:text-gray-200
+    @apply bg-white border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-900
            focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500
-           placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors;
+           placeholder:text-gray-400 transition-colors;
   }
-
   .label {
-    @apply text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider;
+    @apply text-[10px] font-semibold text-gray-500 uppercase tracking-wider;
   }
-
-  /* ── KPI card wrapper ───────────────────────────────────── */
   .kpi-card {
-    @apply card px-4 py-4 relative overflow-hidden transition-colors duration-100 hover:border-gray-300 dark:hover:border-gray-700;
+    @apply card px-4 py-4 relative overflow-hidden transition-colors hover:border-gray-300 hover:shadow-md;
   }
-
-  /* ── Table ──────────────────────────────────────────────── */
   .table-th {
-    @apply px-3 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400
+    @apply px-3 py-2.5 text-left text-[10px] font-semibold text-gray-500
            uppercase tracking-wider whitespace-nowrap cursor-pointer select-none
-           hover:text-gray-700 dark:hover:text-gray-300 transition-colors;
+           hover:text-gray-700 transition-colors;
   }
-
   .table-td {
-    @apply px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap;
+    @apply px-3 py-2.5 text-sm text-gray-700 whitespace-nowrap;
   }
-
   .table-row {
-    @apply hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors;
+    @apply hover:bg-blue-50/40 transition-colors;
   }
-
-  /* ── Badges ─────────────────────────────────────────────── */
   .badge {
     @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
   }
-
   .badge-green {
-    @apply badge bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-200 dark:ring-emerald-800/50;
+    @apply badge bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200;
   }
-
   .badge-red {
-    @apply badge bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 ring-1 ring-red-200 dark:ring-red-800/50;
+    @apply badge bg-red-50 text-red-700 ring-1 ring-red-200;
   }
-
   .badge-gray {
-    @apply badge bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 ring-1 ring-gray-200 dark:ring-gray-700;
+    @apply badge bg-gray-50 text-gray-500 ring-1 ring-gray-200;
   }
-
-  /* ── Section headers ────────────────────────────────────── */
   .section-title {
-    @apply text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider;
+    @apply text-[11px] font-bold text-gray-400 uppercase tracking-wider;
   }
 }
 
-/* ── Scrollbar ─────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { @apply bg-gray-300 dark:bg-gray-700 rounded-full; }
-::-webkit-scrollbar-thumb:hover { @apply bg-gray-400 dark:bg-gray-600; }
+::-webkit-scrollbar-thumb { @apply bg-gray-300 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-gray-400; }
 
-/* ── Recharts ──────────────────────────────────────────── */
 .recharts-tooltip-wrapper { @apply !shadow-lg; }
-
-/* ── DatePicker ────────────────────────────────────────── */
-.react-datepicker {
-  @apply !border-gray-200 dark:!border-gray-700 !font-sans !rounded-lg !shadow-lg;
-}
-.react-datepicker-popper { @apply !z-50; }
-.react-datepicker__header {
-  @apply !bg-gray-50 dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700 !rounded-t-lg;
-}
-.react-datepicker__current-month,
-.react-datepicker__day-name {
-  @apply dark:!text-gray-300;
-}
-.react-datepicker__day {
-  @apply dark:!text-gray-300 !rounded-md;
-}
-.react-datepicker__day:hover {
-  @apply !bg-blue-50 dark:!bg-gray-700 dark:!text-white;
-}
-.react-datepicker__day--selected {
-  @apply !bg-blue-600 !text-white;
-}
-.react-datepicker__day--in-range {
-  @apply dark:!bg-blue-600/20;
-}
-.react-datepicker__day--keyboard-selected {
-  @apply !bg-blue-700 !text-white;
-}

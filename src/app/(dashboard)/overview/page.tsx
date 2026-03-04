@@ -5,6 +5,9 @@ import { useApp } from '@/context/AppContext';
 import Header from '@/components/layout/Header';
 import KPICard from '@/components/ui/KPICard';
 import TrendChart from '@/components/charts/TrendChart';
+import AreaTrendChart from '@/components/charts/AreaTrendChart';
+import DistributionPieChart from '@/components/charts/DistributionPieChart';
+import CategoryBarChart from '@/components/charts/CategoryBarChart';
 import { PageLoading } from '@/components/ui/LoadingSpinner';
 import Link from 'next/link';
 import { formatNumber, formatPercent, formatMinutes } from '@/lib/utils';
@@ -38,8 +41,8 @@ export default function OverviewPage() {
 
   const outKpis = outData?.kpis as Record<string, { current: number | null; previous: number | null; change: number | null }> | undefined;
   const inKpis  = inData?.kpis  as Record<string, { current: number | null; previous: number | null; change: number | null }> | undefined;
-  const outCharts = outData?.charts as { trend: unknown[] } | undefined;
-  const inCharts  = inData?.charts  as { trend: unknown[] } | undefined;
+  const outCharts = outData?.charts as { trend: unknown[]; by_customer?: unknown[]; by_country?: unknown[] } | undefined;
+  const inCharts  = inData?.charts  as { trend: unknown[]; by_customer?: unknown[]; by_gate?: unknown[] } | undefined;
 
   return (
     <div className="flex flex-col h-full">
@@ -53,11 +56,11 @@ export default function OverviewPage() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-4 rounded-full bg-blue-600" />
-                  <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Outbound Operations</h2>
+                  <h2 className="text-sm font-semibold text-gray-800">Outbound Operations</h2>
                 </div>
                 <Link
                   href="/outbound-kpis"
-                  className="flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                  className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
                 >
                   View details <ArrowRight className="w-3 h-3" />
                 </Link>
@@ -73,10 +76,14 @@ export default function OverviewPage() {
               </div>
 
               {outCharts?.trend && outCharts.trend.length > 0 && (
-                <div className="mt-3">
+                <div className="mt-3 grid grid-cols-1 xl:grid-cols-2 gap-4">
                   <TrendChart
                     data={outCharts.trend as Parameters<typeof TrendChart>[0]['data']}
                     title="Outbound Carton Trend"
+                  />
+                  <DistributionPieChart
+                    data={(outCharts.by_customer as { name: string; total_cartons: number }[] ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                    title="Outbound by Customer"
                   />
                 </div>
               )}
@@ -87,11 +94,11 @@ export default function OverviewPage() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-4 rounded-full bg-emerald-600" />
-                  <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Inbound Operations</h2>
+                  <h2 className="text-sm font-semibold text-gray-800">Inbound Operations</h2>
                 </div>
                 <Link
                   href="/inbound-kpis"
-                  className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+                  className="flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
                 >
                   View details <ArrowRight className="w-3 h-3" />
                 </Link>
@@ -107,10 +114,14 @@ export default function OverviewPage() {
               </div>
 
               {inCharts?.trend && inCharts.trend.length > 0 && (
-                <div className="mt-3">
+                <div className="mt-3 grid grid-cols-1 xl:grid-cols-2 gap-4">
                   <TrendChart
                     data={inCharts.trend as Parameters<typeof TrendChart>[0]['data']}
                     title="Inbound Carton Trend"
+                  />
+                  <DistributionPieChart
+                    data={(inCharts.by_customer as { name: string; total_cartons: number }[] ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                    title="Inbound by Customer"
                   />
                 </div>
               )}
@@ -121,10 +132,10 @@ export default function OverviewPage() {
               <p className="section-title mb-3">Quick Access</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { href: '/outbound-kpis', label: 'Outbound KPIs',  desc: 'Full outbound metrics',     icon: <TrendingUp className="w-4 h-4" />,  color: 'text-blue-600 dark:text-blue-400',    hoverBorder: 'hover:border-blue-300 dark:hover:border-blue-800' },
-                  { href: '/inbound-kpis',  label: 'Inbound KPIs',   desc: 'Full inbound metrics',      icon: <TrendingDown className="w-4 h-4" />, color: 'text-emerald-600 dark:text-emerald-400', hoverBorder: 'hover:border-emerald-300 dark:hover:border-emerald-800' },
-                  { href: '/outbound-data', label: 'Outbound Data',  desc: 'Browse outbound records',   icon: <Table2 className="w-4 h-4" />,      color: 'text-violet-600 dark:text-violet-400',  hoverBorder: 'hover:border-violet-300 dark:hover:border-violet-800' },
-                  { href: '/import',        label: 'Import Data',    desc: 'Upload CSV files',          icon: <Upload className="w-4 h-4" />,      color: 'text-amber-600 dark:text-amber-400',   hoverBorder: 'hover:border-amber-300 dark:hover:border-amber-800' },
+                  { href: '/outbound-kpis', label: 'Outbound KPIs',  desc: 'Full outbound metrics',     icon: <TrendingUp className="w-4 h-4" />,  color: 'text-blue-600',    hoverBorder: 'hover:border-blue-300' },
+                  { href: '/inbound-kpis',  label: 'Inbound KPIs',   desc: 'Full inbound metrics',      icon: <TrendingDown className="w-4 h-4" />, color: 'text-emerald-600', hoverBorder: 'hover:border-emerald-300' },
+                  { href: '/outbound-data', label: 'Outbound Data',  desc: 'Browse outbound records',   icon: <Table2 className="w-4 h-4" />,      color: 'text-violet-600',  hoverBorder: 'hover:border-violet-300' },
+                  { href: '/import',        label: 'Import Data',    desc: 'Upload CSV files',          icon: <Upload className="w-4 h-4" />,      color: 'text-amber-600',   hoverBorder: 'hover:border-amber-300' },
                 ].map((item) => (
                   <Link
                     key={item.href}
@@ -133,10 +144,10 @@ export default function OverviewPage() {
                   >
                     <div className={`mt-0.5 shrink-0 ${item.color}`}>{item.icon}</div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{item.label}</p>
+                      <p className="text-sm font-semibold text-gray-800 truncate">{item.label}</p>
                       <p className="text-[11px] text-gray-400 mt-0.5 truncate">{item.desc}</p>
                     </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-700 ml-auto shrink-0 mt-0.5" />
+                    <ArrowRight className="w-3.5 h-3.5 text-gray-300 ml-auto shrink-0 mt-0.5" />
                   </Link>
                 ))}
               </div>
