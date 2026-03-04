@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   ChevronUp,
   ChevronDown,
@@ -48,7 +48,7 @@ function SortIcon({ col, currentCol, dir }: { col: string; currentCol: string; d
 export default function DataTable<T extends object>({
   columns,
   fetchUrl,
-  extraParams = {},
+  extraParams,
   dateColumn,
 }: DataTableProps<T>) {
   const [state, setState] = useState<FetchState<T>>({
@@ -63,36 +63,45 @@ export default function DataTable<T extends object>({
   const [dateStart, setDateStart] = useState('');
   const [dateEnd, setDateEnd] = useState('');
 
-  // Merge extra params with local date filter params
-  const mergedParams = useMemo(() => {
-    const p = { ...extraParams };
-    if (dateStart) p.startDate = dateStart;
-    if (dateEnd) p.endDate = dateEnd;
-    return p;
-  }, [extraParams, dateStart, dateEnd]);
+  // Stable string to avoid infinite loops from new object references on each render
+  const extraParamsJson = JSON.stringify(extraParams ?? {});
+  const prevExtraParamsRef = useRef(extraParamsJson);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (pg: number) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const params = new URLSearchParams({
-        page: String(page),
+      const extra = JSON.parse(extraParamsJson) as Record<string, string>;
+      const qp = new URLSearchParams({
+        page: String(pg),
         pageSize: String(pageSize),
         search,
         sortCol,
         sortDir,
-        ...mergedParams,
+        ...extra,
       });
-      const res = await fetch(`${fetchUrl}?${params}`);
+      if (dateStart) qp.set('startDate', dateStart);
+      if (dateEnd) qp.set('endDate', dateEnd);
+
+      const res = await fetch(`${fetchUrl}?${qp}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setState({ data: json.data ?? [], total: json.total ?? 0, totalPages: json.totalPages ?? 0, loading: false, error: null });
     } catch (err) {
       setState((prev) => ({ ...prev, loading: false, error: String(err) }));
     }
-  }, [fetchUrl, page, pageSize, search, sortCol, sortDir, mergedParams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchUrl, pageSize, search, sortCol, sortDir, extraParamsJson, dateStart, dateEnd]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
-  useEffect(() => { setPage(1); }, [JSON.stringify(mergedParams)]); // eslint-disable-line
+  useEffect(() => {
+    let pg = page;
+    if (prevExtraParamsRef.current !== extraParamsJson) {
+      prevExtraParamsRef.current = extraParamsJson;
+      pg = 1;
+      setPage(1);
+    }
+    fetchData(pg);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchData]);
 
   function handleSort(key: string) {
     if (sortCol === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -104,6 +113,11 @@ export default function DataTable<T extends object>({
     e.preventDefault();
     setSearch(searchInput);
     setPage(1);
+  }
+
+  function handlePageChange(newPage: number) {
+    setPage(newPage);
+    fetchData(newPage);
   }
 
   function clearDateFilter() {
@@ -130,7 +144,6 @@ export default function DataTable<T extends object>({
     <div className="flex flex-col gap-3">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
-        {/* Search */}
         <form onSubmit={handleSearch} className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -153,7 +166,6 @@ export default function DataTable<T extends object>({
           )}
         </form>
 
-        {/* Date filter */}
         {dateColumn && (
           <div className="flex items-center gap-1.5 ml-auto">
             <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
@@ -161,36 +173,23 @@ export default function DataTable<T extends object>({
               type="date"
               value={dateStart}
               onChange={(e) => { setDateStart(e.target.value); setPage(1); }}
-              className={cn(
-                'input h-7 py-0 text-xs w-32',
-                dateStart && 'border-blue-500/50 bg-blue-50'
-              )}
-              placeholder="From"
+              className={cn('input h-7 py-0 text-xs w-32', dateStart && 'border-blue-500/50 bg-blue-50')}
             />
-            <span className="text-gray-400 text-xs">\u2013</span>
+            <span className="text-gray-400 text-xs">&ndash;</span>
             <input
               type="date"
               value={dateEnd}
               onChange={(e) => { setDateEnd(e.target.value); setPage(1); }}
-              className={cn(
-                'input h-7 py-0 text-xs w-32',
-                dateEnd && 'border-blue-500/50 bg-blue-50'
-              )}
-              placeholder="To"
+              className={cn('input h-7 py-0 text-xs w-32', dateEnd && 'border-blue-500/50 bg-blue-50')}
             />
             {hasDateFilter && (
-              <button
-                onClick={clearDateFilter}
-                className="text-gray-400 hover:text-red-500 transition-colors p-0.5"
-                title="Clear date filter"
-              >
+              <button onClick={clearDateFilter} className="text-gray-400 hover:text-red-500 transition-colors p-0.5" title="Clear date filter">
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
         )}
 
-        {/* Page size */}
         <div className={cn('flex items-center gap-2 text-xs text-gray-400', !dateColumn && 'ml-auto')}>
           <span>Rows:</span>
           <select
@@ -249,10 +248,7 @@ export default function DataTable<T extends object>({
                 </tr>
               ) : (
                 state.data.map((row, i) => (
-                  <tr
-                    key={((row as Record<string, unknown>).id as string | number) ?? i}
-                    className="table-row"
-                  >
+                  <tr key={((row as Record<string, unknown>).id as string | number) ?? i} className="table-row">
                     {columns.map((col) => (
                       <td key={String(col.key)} className="table-td">
                         {renderCell(row, col)}
@@ -272,13 +268,13 @@ export default function DataTable<T extends object>({
           </p>
           <div className="flex items-center gap-0.5">
             {[
-              { icon: <ChevronsLeft className="w-3.5 h-3.5" />,  action: () => setPage(1),                              disabled: page === 1 },
-              { icon: <ChevronLeft  className="w-3.5 h-3.5" />,  action: () => setPage((p) => Math.max(1, p - 1)),      disabled: page === 1 },
-              { icon: <ChevronRight className="w-3.5 h-3.5" />,  action: () => setPage((p) => Math.min(state.totalPages, p + 1)), disabled: page >= state.totalPages },
-              { icon: <ChevronsRight className="w-3.5 h-3.5" />, action: () => setPage(state.totalPages),               disabled: page >= state.totalPages },
-            ].map((btn, i) => (
+              { icon: <ChevronsLeft className="w-3.5 h-3.5" />,  action: () => handlePageChange(1),                                     disabled: page === 1 },
+              { icon: <ChevronLeft  className="w-3.5 h-3.5" />,  action: () => handlePageChange(Math.max(1, page - 1)),                  disabled: page === 1 },
+              { icon: <ChevronRight className="w-3.5 h-3.5" />,  action: () => handlePageChange(Math.min(state.totalPages, page + 1)),   disabled: page >= state.totalPages },
+              { icon: <ChevronsRight className="w-3.5 h-3.5" />, action: () => handlePageChange(state.totalPages),                       disabled: page >= state.totalPages },
+            ].map((btn, idx) => (
               <button
-                key={i}
+                key={idx}
                 className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 onClick={btn.action}
                 disabled={btn.disabled}
