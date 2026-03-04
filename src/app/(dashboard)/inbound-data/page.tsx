@@ -1,6 +1,5 @@
 'use client';
 
-import { useApp } from '@/context/AppContext';
 import Header from '@/components/layout/Header';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
 import { InboundRow } from '@/types';
@@ -82,19 +81,14 @@ const COLUMNS: ColumnDef<InboundRow>[] = [
 ];
 
 export default function InboundDataPage() {
-  const { globalStartDate, globalEndDate } = useApp();
-
   return (
     <div className="flex flex-col h-full">
-      <Header title="Inbound Data" />
+      <Header title="Inbound Data" showDatePicker={false} />
       <div className="flex-1 p-6 overflow-auto">
         <DataTable
           columns={COLUMNS}
           fetchUrl="/api/inbound/data"
-          extraParams={{
-            startDate: globalStartDate,
-            endDate: globalEndDate,
-          }}
+          dateColumn="unloading_date"
         />
       </div>
     </div>

@@ -1,6 +1,5 @@
 'use client';
 
-import { useApp } from '@/context/AppContext';
 import Header from '@/components/layout/Header';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
 import { OutboundRow } from '@/types';
@@ -80,19 +79,14 @@ const COLUMNS: ColumnDef<OutboundRow>[] = [
 ];
 
 export default function OutboundDataPage() {
-  const { globalStartDate, globalEndDate } = useApp();
-
   return (
     <div className="flex flex-col h-full">
-      <Header title="Outbound Data" />
+      <Header title="Outbound Data" showDatePicker={false} />
       <div className="flex-1 p-6 overflow-auto">
         <DataTable
           columns={COLUMNS}
           fetchUrl="/api/outbound/data"
-          extraParams={{
-            startDate: globalStartDate,
-            endDate: globalEndDate,
-          }}
+          dateColumn="shipped_date"
         />
       </div>
     </div>

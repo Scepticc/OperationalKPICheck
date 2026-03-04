@@ -5,7 +5,7 @@ import { Info, Shield, RefreshCw, Database } from 'lucide-react';
 export default function ImportPage() {
   return (
     <div className="flex flex-col h-full">
-      <Header title="Data Import" />
+      <Header title="Data Import" showDatePicker={false} />
       <div className="flex-1 p-6 space-y-5 overflow-y-auto">
         {/* Info banner */}
         <div className="card p-4 bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/60 dark:border-blue-800/40">

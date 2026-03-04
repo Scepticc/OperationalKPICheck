@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   ChevronUp,
   ChevronDown,
@@ -10,6 +10,8 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Calendar,
+  X,
 } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 
@@ -25,6 +27,7 @@ interface DataTableProps<T extends object> {
   columns: ColumnDef<T>[];
   fetchUrl: string;
   extraParams?: Record<string, string>;
+  dateColumn?: string;
 }
 
 interface FetchState<T> {
@@ -46,6 +49,7 @@ export default function DataTable<T extends object>({
   columns,
   fetchUrl,
   extraParams = {},
+  dateColumn,
 }: DataTableProps<T>) {
   const [state, setState] = useState<FetchState<T>>({
     data: [], total: 0, totalPages: 0, loading: false, error: null,
@@ -56,11 +60,28 @@ export default function DataTable<T extends object>({
   const [sortCol, setSortCol] = useState('');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [searchInput, setSearchInput] = useState('');
+  const [dateStart, setDateStart] = useState('');
+  const [dateEnd, setDateEnd] = useState('');
+
+  // Merge extra params with local date filter params
+  const mergedParams = useMemo(() => {
+    const p = { ...extraParams };
+    if (dateStart) p.startDate = dateStart;
+    if (dateEnd) p.endDate = dateEnd;
+    return p;
+  }, [extraParams, dateStart, dateEnd]);
 
   const fetchData = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), search, sortCol, sortDir, ...extraParams });
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+        search,
+        sortCol,
+        sortDir,
+        ...mergedParams,
+      });
       const res = await fetch(`${fetchUrl}?${params}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
@@ -68,10 +89,10 @@ export default function DataTable<T extends object>({
     } catch (err) {
       setState((prev) => ({ ...prev, loading: false, error: String(err) }));
     }
-  }, [fetchUrl, page, pageSize, search, sortCol, sortDir, extraParams]);
+  }, [fetchUrl, page, pageSize, search, sortCol, sortDir, mergedParams]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-  useEffect(() => { setPage(1); }, [JSON.stringify(extraParams)]); // eslint-disable-line
+  useEffect(() => { setPage(1); }, [JSON.stringify(mergedParams)]); // eslint-disable-line
 
   function handleSort(key: string) {
     if (sortCol === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -82,6 +103,12 @@ export default function DataTable<T extends object>({
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     setSearch(searchInput);
+    setPage(1);
+  }
+
+  function clearDateFilter() {
+    setDateStart('');
+    setDateEnd('');
     setPage(1);
   }
 
@@ -97,11 +124,13 @@ export default function DataTable<T extends object>({
 
   const start = (page - 1) * pageSize + 1;
   const end   = Math.min(page * pageSize, state.total);
+  const hasDateFilter = dateStart || dateEnd;
 
   return (
     <div className="flex flex-col gap-3">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Search */}
         <form onSubmit={handleSearch} className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -124,7 +153,45 @@ export default function DataTable<T extends object>({
           )}
         </form>
 
-        <div className="flex items-center gap-2 text-xs text-gray-400">
+        {/* Date filter */}
+        {dateColumn && (
+          <div className="flex items-center gap-1.5 ml-auto">
+            <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <input
+              type="date"
+              value={dateStart}
+              onChange={(e) => { setDateStart(e.target.value); setPage(1); }}
+              className={cn(
+                'input h-7 py-0 text-xs w-32',
+                dateStart && 'border-blue-500/50 bg-blue-50 dark:bg-blue-900/15'
+              )}
+              placeholder="From"
+            />
+            <span className="text-gray-400 text-xs">\u2013</span>
+            <input
+              type="date"
+              value={dateEnd}
+              onChange={(e) => { setDateEnd(e.target.value); setPage(1); }}
+              className={cn(
+                'input h-7 py-0 text-xs w-32',
+                dateEnd && 'border-blue-500/50 bg-blue-50 dark:bg-blue-900/15'
+              )}
+              placeholder="To"
+            />
+            {hasDateFilter && (
+              <button
+                onClick={clearDateFilter}
+                className="text-gray-400 hover:text-red-500 transition-colors p-0.5"
+                title="Clear date filter"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Page size */}
+        <div className={cn('flex items-center gap-2 text-xs text-gray-400', !dateColumn && 'ml-auto')}>
           <span>Rows:</span>
           <select
             className="input h-7 py-0 pr-6 text-xs"
