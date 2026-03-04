@@ -115,7 +115,7 @@ export default function DataTable<T extends object>({
   function renderCell(row: T, col: ColumnDef<T>) {
     if (col.render) return col.render(row);
     const val = row[col.key as keyof T];
-    if (val === null || val === undefined) return <span className="text-gray-300 dark:text-gray-700">{'\u2014'}</span>;
+    if (val === null || val === undefined) return <span className="text-gray-300">{'\u2014'}</span>;
     if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val) && col.key.toString().includes('date')) {
       return formatDate(val);
     }
@@ -163,7 +163,7 @@ export default function DataTable<T extends object>({
               onChange={(e) => { setDateStart(e.target.value); setPage(1); }}
               className={cn(
                 'input h-7 py-0 text-xs w-32',
-                dateStart && 'border-blue-500/50 bg-blue-50 dark:bg-blue-900/15'
+                dateStart && 'border-blue-500/50 bg-blue-50'
               )}
               placeholder="From"
             />
@@ -174,7 +174,7 @@ export default function DataTable<T extends object>({
               onChange={(e) => { setDateEnd(e.target.value); setPage(1); }}
               className={cn(
                 'input h-7 py-0 text-xs w-32',
-                dateEnd && 'border-blue-500/50 bg-blue-50 dark:bg-blue-900/15'
+                dateEnd && 'border-blue-500/50 bg-blue-50'
               )}
               placeholder="To"
             />
@@ -204,11 +204,11 @@ export default function DataTable<T extends object>({
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/80">
+              <tr className="border-b border-gray-100 bg-gray-50">
                 {columns.map((col) => (
                   <th
                     key={String(col.key)}
@@ -225,7 +225,7 @@ export default function DataTable<T extends object>({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+            <tbody className="divide-y divide-gray-50">
               {state.loading ? (
                 <tr>
                   <td colSpan={columns.length} className="py-16 text-center">
@@ -243,7 +243,7 @@ export default function DataTable<T extends object>({
                 </tr>
               ) : state.data.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="py-16 text-center text-sm text-gray-400 dark:text-gray-600">
+                  <td colSpan={columns.length} className="py-16 text-center text-sm text-gray-400">
                     No results found
                   </td>
                 </tr>
@@ -266,7 +266,7 @@ export default function DataTable<T extends object>({
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/80">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 bg-gray-50/50">
           <p className="text-xs text-gray-400 tabular-nums">
             {state.total > 0 ? `${start.toLocaleString()}\u2013${end.toLocaleString()} of ${state.total.toLocaleString()}` : 'No results'}
           </p>
@@ -279,7 +279,7 @@ export default function DataTable<T extends object>({
             ].map((btn, i) => (
               <button
                 key={i}
-                className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 onClick={btn.action}
                 disabled={btn.disabled}
               >

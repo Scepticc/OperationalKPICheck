@@ -32,14 +32,14 @@ export default function Sidebar() {
     <aside
       className={cn(
         'flex flex-col shrink-0 transition-all duration-200',
-        'bg-gray-900 dark:bg-[#070b14]',
-        'border-r border-gray-800 dark:border-gray-900',
+        'bg-gray-900',
+        'border-r border-gray-800',
         collapsed ? 'w-[56px]' : 'w-52'
       )}
     >
       {/* Brand */}
       <div className={cn(
-        'flex items-center gap-2.5 border-b border-gray-800 dark:border-gray-900 shrink-0',
+        'flex items-center gap-2.5 border-b border-gray-800 shrink-0',
         collapsed ? 'px-0 py-4 justify-center' : 'px-4 py-4'
       )}>
         <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center shrink-0">

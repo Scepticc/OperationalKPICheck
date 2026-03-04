@@ -150,12 +150,15 @@ export interface OutboundCharts {
   by_customer: CategoryDataPoint[];
   by_country: CategoryDataPoint[];
   by_dock: CategoryDataPoint[];
+  by_route: CategoryDataPoint[];
+  by_warehouse: CategoryDataPoint[];
 }
 
 export interface InboundCharts {
   trend: TrendDataPoint[];
   by_customer: CategoryDataPoint[];
   by_gate: CategoryDataPoint[];
+  by_warehouse: CategoryDataPoint[];
 }
 
 // ─── Filter types ─────────────────────────────────────────────────────────────

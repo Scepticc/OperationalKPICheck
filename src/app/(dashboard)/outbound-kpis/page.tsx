@@ -6,7 +6,9 @@ import Header from '@/components/layout/Header';
 import KPICard from '@/components/ui/KPICard';
 import FilterBar from '@/components/ui/FilterBar';
 import TrendChart from '@/components/charts/TrendChart';
+import AreaTrendChart from '@/components/charts/AreaTrendChart';
 import CategoryBarChart from '@/components/charts/CategoryBarChart';
+import DistributionPieChart from '@/components/charts/DistributionPieChart';
 import { PageLoading } from '@/components/ui/LoadingSpinner';
 import { OutboundKPIs, OutboundCharts, FilterOptions } from '@/types';
 import {
@@ -280,15 +282,42 @@ export default function OutboundKPIsPage() {
 
             {/* Charts */}
             <section>
-              <h2 className="section-title mb-3">Analytics</h2>
+              <h2 className="section-title mb-3">Trends</h2>
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                <div className="xl:col-span-2">
-                  <TrendChart
-                    data={charts?.trend ?? []}
-                    granularity={outboundFilters.granularity ?? 'day'}
-                    title="Carton Volume Trend"
-                  />
-                </div>
+                <TrendChart
+                  data={charts?.trend ?? []}
+                  granularity={outboundFilters.granularity ?? 'day'}
+                  title="Carton Volume Trend"
+                />
+                <AreaTrendChart
+                  data={charts?.trend ?? []}
+                  granularity={outboundFilters.granularity ?? 'day'}
+                  title="Shipment & Carton Area"
+                />
+              </div>
+            </section>
+
+            <section>
+              <h2 className="section-title mb-3">Distribution</h2>
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                <DistributionPieChart
+                  data={(charts?.by_customer ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                  title="Carton Share by Customer"
+                />
+                <DistributionPieChart
+                  data={(charts?.by_country ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                  title="Carton Share by Country"
+                />
+                <DistributionPieChart
+                  data={(charts?.by_warehouse ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                  title="Carton Share by Warehouse"
+                />
+              </div>
+            </section>
+
+            <section>
+              <h2 className="section-title mb-3">Breakdown</h2>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <CategoryBarChart
                   data={charts?.by_customer ?? []}
                   title="Cartons by Customer"
@@ -300,14 +329,18 @@ export default function OutboundKPIsPage() {
                   color="#059669"
                   onBarClick={(name) => setOutboundFilters({ country: name })}
                 />
-                <div className="xl:col-span-2">
-                  <CategoryBarChart
-                    data={charts?.by_dock ?? []}
-                    title="Cartons by Dock"
-                    color="#d97706"
-                    onBarClick={(name) => setOutboundFilters({ dock: name })}
-                  />
-                </div>
+                <CategoryBarChart
+                  data={charts?.by_dock ?? []}
+                  title="Cartons by Dock"
+                  color="#d97706"
+                  onBarClick={(name) => setOutboundFilters({ dock: name })}
+                />
+                <CategoryBarChart
+                  data={charts?.by_route ?? []}
+                  title="Cartons by Route"
+                  color="#7c3aed"
+                  onBarClick={(name) => setOutboundFilters({ route: name })}
+                />
               </div>
             </section>
           </>

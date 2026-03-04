@@ -111,7 +111,7 @@ async function computeTrends(
   const safe_gran = ['day', 'week', 'month'].includes(granularity) ? granularity : 'day';
   const andOrWhere = where ? 'AND' : 'WHERE';
 
-  const [byCustomer, byGate, trend] = await Promise.all([
+  const [byCustomer, byGate, byWarehouse, trend] = await Promise.all([
     client.query(
       `SELECT customer AS name, COALESCE(SUM(carton_count),0) AS total_cartons, COUNT(DISTINCT shipment) AS shipment_count
        FROM inbound_shipments ${where} ${andOrWhere} customer IS NOT NULL
@@ -125,6 +125,12 @@ async function computeTrends(
       params
     ),
     client.query(
+      `SELECT warehouse AS name, COALESCE(SUM(carton_count),0) AS total_cartons, COUNT(DISTINCT shipment) AS shipment_count
+       FROM inbound_shipments ${where} ${andOrWhere} warehouse IS NOT NULL AND warehouse <> ''
+       GROUP BY warehouse ORDER BY total_cartons DESC LIMIT 15`,
+      params
+    ),
+    client.query(
       `SELECT DATE_TRUNC('${safe_gran}', unloading_date)::date AS period,
               COALESCE(SUM(carton_count), 0) AS total_cartons,
               COUNT(DISTINCT shipment) AS shipment_count
@@ -135,7 +141,7 @@ async function computeTrends(
     ),
   ]);
 
-  return { trend: trend.rows, by_customer: byCustomer.rows, by_gate: byGate.rows };
+  return { trend: trend.rows, by_customer: byCustomer.rows, by_gate: byGate.rows, by_warehouse: byWarehouse.rows };
 }
 
 function makeKPIValue(current: unknown, previous: unknown): KPIValue {

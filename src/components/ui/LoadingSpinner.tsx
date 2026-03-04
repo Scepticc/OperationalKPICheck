@@ -19,12 +19,12 @@ export default function LoadingSpinner({
     <div className={cn('flex flex-col items-center justify-center gap-3', className)}>
       <div
         className={cn(
-          'border-[3px] border-gray-200 dark:border-gray-700 border-t-blue-600 rounded-full animate-spin',
+          'border-[3px] border-gray-200 border-t-blue-600 rounded-full animate-spin',
           sizes[size]
         )}
       />
       {label && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+        <p className="text-sm text-gray-500">{label}</p>
       )}
     </div>
   );

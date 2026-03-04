@@ -29,8 +29,8 @@ function CustomTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0];
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 text-sm">
-      <p className="text-xs font-semibold text-gray-800 dark:text-gray-100 mb-1.5 max-w-[200px] truncate">{d.payload.name}</p>
+    <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-sm">
+      <p className="text-xs font-semibold text-gray-800 mb-1.5 max-w-[200px] truncate">{d.payload.name}</p>
       <div className="space-y-1">
         <div className="flex justify-between gap-6">
           <span className="text-xs text-gray-400">Cartons</span>
@@ -59,7 +59,7 @@ export default function CategoryBarChart({
     return (
       <div className="card p-4">
         <p className="section-title mb-3">{title}</p>
-        <div className="h-44 flex items-center justify-center text-gray-400 dark:text-gray-600 text-sm">No data available</div>
+        <div className="h-44 flex items-center justify-center text-gray-400 text-sm">No data available</div>
       </div>
     );
   }
@@ -80,7 +80,7 @@ export default function CategoryBarChart({
             strokeDasharray="3 3"
             horizontal={false}
             stroke="currentColor"
-            className="text-gray-100 dark:text-gray-800"
+            className="text-gray-100"
           />
           <XAxis
             type="number"

@@ -6,7 +6,9 @@ import Header from '@/components/layout/Header';
 import KPICard from '@/components/ui/KPICard';
 import FilterBar from '@/components/ui/FilterBar';
 import TrendChart from '@/components/charts/TrendChart';
+import AreaTrendChart from '@/components/charts/AreaTrendChart';
 import CategoryBarChart from '@/components/charts/CategoryBarChart';
+import DistributionPieChart from '@/components/charts/DistributionPieChart';
 import { PageLoading } from '@/components/ui/LoadingSpinner';
 import { InboundKPIs, InboundCharts, FilterOptions } from '@/types';
 import { formatNumber, formatPercent, formatMinutes } from '@/lib/utils';
@@ -250,17 +252,44 @@ export default function InboundKPIsPage() {
 
             {/* Charts */}
             <section>
-              <h2 className="section-title mb-3">Analytics</h2>
+              <h2 className="section-title mb-3">Trends</h2>
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                <div className="xl:col-span-2">
-                  <TrendChart
-                    data={charts?.trend ?? []}
-                    granularity={inboundFilters.granularity ?? 'day'}
-                    title="Carton Volume Trend"
-                    valueKey="total_cartons"
-                    valueLabel="Cartons"
-                  />
-                </div>
+                <TrendChart
+                  data={charts?.trend ?? []}
+                  granularity={inboundFilters.granularity ?? 'day'}
+                  title="Carton Volume Trend"
+                  valueKey="total_cartons"
+                  valueLabel="Cartons"
+                />
+                <AreaTrendChart
+                  data={charts?.trend ?? []}
+                  granularity={inboundFilters.granularity ?? 'day'}
+                  title="Shipment & Carton Area"
+                />
+              </div>
+            </section>
+
+            <section>
+              <h2 className="section-title mb-3">Distribution</h2>
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                <DistributionPieChart
+                  data={(charts?.by_customer ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                  title="Carton Share by Customer"
+                />
+                <DistributionPieChart
+                  data={(charts?.by_gate ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                  title="Carton Share by Gate"
+                />
+                <DistributionPieChart
+                  data={(charts?.by_warehouse ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                  title="Carton Share by Warehouse"
+                />
+              </div>
+            </section>
+
+            <section>
+              <h2 className="section-title mb-3">Breakdown</h2>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <CategoryBarChart
                   data={charts?.by_customer ?? []}
                   title="Cartons by Customer"
