@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import Header from '@/components/layout/Header';
 import KPICard from '@/components/ui/KPICard';
@@ -8,15 +8,7 @@ import TrendChart from '@/components/charts/TrendChart';
 import { PageLoading } from '@/components/ui/LoadingSpinner';
 import Link from 'next/link';
 import { formatNumber, formatPercent, formatMinutes } from '@/lib/utils';
-import {
-  ArrowRight,
-  TrendingUp,
-  TrendingDown,
-  Package,
-  BarChart3,
-  Upload,
-  Table2,
-} from 'lucide-react';
+import { ArrowRight, Wallet, ShieldCheck, Activity, Truck, Factory, Target, Landmark } from 'lucide-react';
 
 export default function OverviewPage() {
   const { globalStartDate, globalEndDate } = useApp();
@@ -31,112 +23,104 @@ export default function OverviewPage() {
       fetch(`/api/outbound/kpis?${params}`).then((r) => r.json()),
       fetch(`/api/inbound/kpis?${params}`).then((r) => r.json()),
     ])
-      .then(([out, inn]) => { setOutData(out); setInData(inn); })
+      .then(([out, inn]) => {
+        setOutData(out);
+        setInData(inn);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [globalStartDate, globalEndDate]);
 
   const outKpis = outData?.kpis as Record<string, { current: number | null; previous: number | null; change: number | null }> | undefined;
-  const inKpis  = inData?.kpis  as Record<string, { current: number | null; previous: number | null; change: number | null }> | undefined;
+  const inKpis = inData?.kpis as Record<string, { current: number | null; previous: number | null; change: number | null }> | undefined;
   const outCharts = outData?.charts as { trend: unknown[] } | undefined;
-  const inCharts  = inData?.charts  as { trend: unknown[] } | undefined;
+  const inCharts = inData?.charts as { trend: unknown[] } | undefined;
+
+  const executiveSignals = useMemo(() => {
+    const outboundVolume = outKpis?.total_cartons?.current ?? 0;
+    const inboundVolume = inKpis?.total_cartons?.current ?? 0;
+    const blendedService = ((outKpis?.on_time_pickup_rate?.current ?? 0) + (inKpis?.on_time_arrival_rate?.current ?? 0)) / 2;
+    const cycleTime = ((outKpis?.avg_loading_time?.current ?? 0) + (inKpis?.avg_unloading_time?.current ?? 0)) / 2;
+
+    return {
+      outboundVolume,
+      inboundVolume,
+      blendedService,
+      cycleTime,
+      networkBalance: outboundVolume - inboundVolume,
+    };
+  }, [outKpis, inKpis]);
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Executive Overview" />
+      <Header title="Senior Executive Financial Control" />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {loading ? <PageLoading /> : (
+        {loading ? (
+          <PageLoading />
+        ) : (
           <>
-            {/* Outbound Section */}
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-1 h-4 rounded-full bg-blue-600" />
-                  <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Outbound Operations</h2>
+            <section className="card p-4 border-l-4 border-l-indigo-500">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-indigo-500 font-semibold">Board Summary</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Financially controlled operations cockpit</h2>
+                  <p className="text-xs text-gray-500 mt-1">Track service reliability, throughput productivity, and cycle-time risk from one command view.</p>
                 </div>
-                <Link
-                  href="/outbound-kpis"
-                  className="flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-                >
-                  View details <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-                <KPICard title="Shipments"       kpi={outKpis?.row_count}           format={formatNumber}  icon={<Package className="w-3.5 h-3.5" />} accentColor="blue" />
-                <KPICard title="Cartons"         kpi={outKpis?.total_cartons}        format={formatNumber}  accentColor="blue" />
-                <KPICard title="Pallets"         kpi={outKpis?.total_pallets}        format={formatNumber}  accentColor="blue" />
-                <KPICard title="Return Rate"     kpi={outKpis?.return_rate}          format={formatPercent} higherIsBetter={false} accentColor="amber" />
-                <KPICard title="On-time Pickup"  kpi={outKpis?.on_time_pickup_rate}  format={formatPercent} accentColor="emerald" />
-                <KPICard title="Avg Loading"     kpi={outKpis?.avg_loading_time}     format={formatMinutes} higherIsBetter={false} accentColor="violet" />
-              </div>
-
-              {outCharts?.trend && outCharts.trend.length > 0 && (
-                <div className="mt-3">
-                  <TrendChart
-                    data={outCharts.trend as Parameters<typeof TrendChart>[0]['data']}
-                    title="Outbound Carton Trend"
-                  />
+                <div className="flex items-center gap-2 text-xs">
+                  <Link href="/outbound-kpis" className="px-3 py-1.5 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-900/25 dark:text-blue-300 font-medium">Outbound KPI Tab</Link>
+                  <Link href="/inbound-kpis" className="px-3 py-1.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-900/25 dark:text-emerald-300 font-medium">Inbound KPI Tab</Link>
                 </div>
-              )}
+              </div>
             </section>
 
-            {/* Inbound Section */}
             <section>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-1 h-4 rounded-full bg-emerald-600" />
-                  <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Inbound Operations</h2>
-                </div>
-                <Link
-                  href="/inbound-kpis"
-                  className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
-                >
-                  View details <ArrowRight className="w-3 h-3" />
-                </Link>
+              <h3 className="section-title mb-3">Executive Control Signals</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+                <KPICard title="Outbound Throughput" kpi={outKpis?.total_cartons} format={formatNumber} icon={<Factory className="w-4 h-4" />} accentColor="blue" />
+                <KPICard title="Inbound Throughput" kpi={inKpis?.total_cartons} format={formatNumber} icon={<Truck className="w-4 h-4" />} accentColor="emerald" />
+                <KPICard title="Blended Service Level" kpi={{ current: executiveSignals.blendedService, previous: null, change: null }} format={formatPercent} icon={<ShieldCheck className="w-4 h-4" />} accentColor="emerald" />
+                <KPICard title="Blended Cycle Time" kpi={{ current: executiveSignals.cycleTime, previous: null, change: null }} higherIsBetter={false} format={formatMinutes} icon={<Activity className="w-4 h-4" />} accentColor="violet" />
+                <KPICard title="Network Balance" kpi={{ current: executiveSignals.networkBalance, previous: null, change: null }} format={formatNumber} icon={<Wallet className="w-4 h-4" />} accentColor="amber" description="Outbound cartons - Inbound cartons" />
               </div>
+            </section>
 
+            <section>
+              <h3 className="section-title mb-3">Operational Cost Drivers</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-                <KPICard title="Shipments"       kpi={inKpis?.row_count}           format={formatNumber}  icon={<Package className="w-3.5 h-3.5" />} accentColor="emerald" />
-                <KPICard title="Cartons Recv."   kpi={inKpis?.total_cartons}       format={formatNumber}  accentColor="emerald" />
-                <KPICard title="Pallets Recv."   kpi={inKpis?.total_pallets}       format={formatNumber}  accentColor="emerald" />
+                <KPICard title="Outbound Return Exposure" kpi={outKpis?.return_rate} format={formatPercent} higherIsBetter={false} icon={<Target className="w-4 h-4" />} accentColor="amber" />
+                <KPICard title="Outbound Dwell Time" kpi={outKpis?.avg_dwell_time} format={formatMinutes} higherIsBetter={false} accentColor="violet" />
+                <KPICard title="Inbound Dwell Time" kpi={inKpis?.avg_dwell_time} format={formatMinutes} higherIsBetter={false} accentColor="violet" />
+                <KPICard title="Decon Completion" kpi={inKpis?.decon_completed_rate} format={formatPercent} icon={<Landmark className="w-4 h-4" />} accentColor="emerald" />
+                <KPICard title="On-time Pickup" kpi={outKpis?.on_time_pickup_rate} format={formatPercent} accentColor="blue" />
                 <KPICard title="On-time Arrival" kpi={inKpis?.on_time_arrival_rate} format={formatPercent} accentColor="emerald" />
-                <KPICard title="Decon Completed" kpi={inKpis?.decon_completed_rate} format={formatPercent} accentColor="violet" />
-                <KPICard title="Avg Unloading"   kpi={inKpis?.avg_unloading_time}  format={formatMinutes} higherIsBetter={false} accentColor="amber" />
               </div>
+            </section>
 
+            <section className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {outCharts?.trend && outCharts.trend.length > 0 && (
+                <TrendChart data={outCharts.trend as Parameters<typeof TrendChart>[0]['data']} title="Outbound Throughput Trend" />
+              )}
               {inCharts?.trend && inCharts.trend.length > 0 && (
-                <div className="mt-3">
-                  <TrendChart
-                    data={inCharts.trend as Parameters<typeof TrendChart>[0]['data']}
-                    title="Inbound Carton Trend"
-                  />
-                </div>
+                <TrendChart data={inCharts.trend as Parameters<typeof TrendChart>[0]['data']} title="Inbound Throughput Trend" />
               )}
             </section>
 
-            {/* Quick Navigation */}
             <section>
-              <p className="section-title mb-3">Quick Access</p>
+              <h3 className="section-title mb-3">Detailed Views</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { href: '/outbound-kpis', label: 'Outbound KPIs',  desc: 'Full outbound metrics',     icon: <TrendingUp className="w-4 h-4" />,  color: 'text-blue-600 dark:text-blue-400',    hoverBorder: 'hover:border-blue-300 dark:hover:border-blue-800' },
-                  { href: '/inbound-kpis',  label: 'Inbound KPIs',   desc: 'Full inbound metrics',      icon: <TrendingDown className="w-4 h-4" />, color: 'text-emerald-600 dark:text-emerald-400', hoverBorder: 'hover:border-emerald-300 dark:hover:border-emerald-800' },
-                  { href: '/outbound-data', label: 'Outbound Data',  desc: 'Browse outbound records',   icon: <Table2 className="w-4 h-4" />,      color: 'text-violet-600 dark:text-violet-400',  hoverBorder: 'hover:border-violet-300 dark:hover:border-violet-800' },
-                  { href: '/import',        label: 'Import Data',    desc: 'Upload CSV files',          icon: <Upload className="w-4 h-4" />,      color: 'text-amber-600 dark:text-amber-400',   hoverBorder: 'hover:border-amber-300 dark:hover:border-amber-800' },
+                  { href: '/outbound-kpis', label: 'Outbound KPI Tab', desc: 'Shipment economics and control', color: 'text-blue-600' },
+                  { href: '/inbound-kpis', label: 'Inbound KPI Tab', desc: 'Receiving governance and SLA', color: 'text-emerald-600' },
+                  { href: '/outbound-data', label: 'Outbound Data', desc: 'Drill into shipment rows', color: 'text-violet-600' },
+                  { href: '/import', label: 'Data Import', desc: 'Refresh finance control dataset', color: 'text-amber-600' },
                 ].map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`card p-3.5 flex items-start gap-3 transition-colors duration-100 ${item.hoverBorder}`}
-                  >
-                    <div className={`mt-0.5 shrink-0 ${item.color}`}>{item.icon}</div>
+                  <Link key={item.href} href={item.href} className="card p-3.5 flex items-start gap-3 transition-colors duration-100 hover:border-gray-300 dark:hover:border-gray-700">
+                    <div className={`mt-0.5 shrink-0 ${item.color}`}><ArrowRight className="w-4 h-4" /></div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{item.label}</p>
                       <p className="text-[11px] text-gray-400 mt-0.5 truncate">{item.desc}</p>
                     </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-700 ml-auto shrink-0 mt-0.5" />
                   </Link>
                 ))}
               </div>
