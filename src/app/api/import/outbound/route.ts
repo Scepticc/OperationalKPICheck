@@ -8,10 +8,12 @@ import {
   OUTBOUND_DATE_COLS,
   parseCell,
 } from '@/lib/utils';
-import { ImportResult } from '@/types';
+import { ImportResult, DuplicateRecord } from '@/types';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
+
+const UNIQUE_KEY_COLS = ['order_number', 'shipment', 'shipped_date'];
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,7 +27,6 @@ export async function POST(req: NextRequest) {
 
     const text = await file.text();
 
-    // Parse CSV
     const parsed = Papa.parse<Record<string, string>>(text, {
       header: true,
       skipEmptyLines: true,
@@ -40,7 +41,9 @@ export async function POST(req: NextRequest) {
 
     const rows = parsed.data;
     if (rows.length === 0) {
-      return NextResponse.json({ inserted: 0, skipped: 0, total: 0, errors: [] });
+      return NextResponse.json({
+        inserted: 0, updated: 0, skipped: 0, total: 0, errors: [], duplicates: [],
+      });
     }
 
     // Map headers
@@ -62,13 +65,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Build the UPDATE SET clause for non-key columns
+    const updateCols = dbCols.filter((c) => !UNIQUE_KEY_COLS.includes(c));
+    const updateSet = updateCols.length > 0
+      ? updateCols.map((c) => `${c} = EXCLUDED.${c}`).join(', ')
+      : null;
+
     const client = await db.connect();
     let inserted = 0;
+    let updated = 0;
     const errors: string[] = [];
+    const duplicates: DuplicateRecord[] = [];
 
     try {
       const colList = dbCols.join(', ');
       const placeholders = dbCols.map((_, i) => `$${i + 1}`).join(', ');
+
+      // Build the SQL: UPSERT with RETURNING to detect insert vs update
+      const conflictAction = updateSet
+        ? `ON CONFLICT (order_number, shipment, shipped_date) DO UPDATE SET ${updateSet} RETURNING (xmax = 0) AS was_inserted`
+        : `ON CONFLICT (order_number, shipment, shipped_date) DO NOTHING`;
 
       for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
         const row = rows[rowIdx];
@@ -82,14 +98,41 @@ export async function POST(req: NextRequest) {
           values.push(parseCell(rawVal, dbCol, OUTBOUND_NUMERIC_COLS, OUTBOUND_DATE_COLS));
         }
 
+        // Build a human-readable key for this row
+        const keyParts: string[] = [];
+        for (const kc of UNIQUE_KEY_COLS) {
+          const idx = dbCols.indexOf(kc);
+          if (idx >= 0) keyParts.push(`${kc}=${values[idx] ?? 'NULL'}`);
+        }
+        const keyStr = keyParts.join(', ');
+
         try {
           const result = await client.query(
             `INSERT INTO outbound_shipments (${colList})
              VALUES (${placeholders})
-             ON CONFLICT (order_number, shipment, shipped_date) DO NOTHING`,
+             ${conflictAction}`,
             values
           );
-          inserted += result.rowCount ?? 0;
+
+          if (updateSet) {
+            // With DO UPDATE, we get RETURNING result
+            if (result.rows.length > 0) {
+              const wasInserted = result.rows[0].was_inserted;
+              if (wasInserted) {
+                inserted++;
+              } else {
+                updated++;
+                duplicates.push({ row: rowIdx + 2, key: keyStr, action: 'updated' });
+              }
+            }
+          } else {
+            // With DO NOTHING
+            if ((result.rowCount ?? 0) > 0) {
+              inserted++;
+            } else {
+              duplicates.push({ row: rowIdx + 2, key: keyStr, action: 'skipped' });
+            }
+          }
         } catch (rowErr) {
           errors.push(`Row ${rowIdx + 2}: ${String(rowErr)}`);
         }
@@ -100,9 +143,11 @@ export async function POST(req: NextRequest) {
 
     const result: ImportResult = {
       inserted,
-      skipped: rows.length - inserted - errors.length,
+      updated,
+      skipped: rows.length - inserted - updated - errors.length,
       total: rows.length,
-      errors: errors.slice(0, 10),
+      errors: errors.slice(0, 20),
+      duplicates: duplicates.slice(0, 100),
     };
 
     return NextResponse.json(result);

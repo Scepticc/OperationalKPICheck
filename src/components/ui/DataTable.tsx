@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   ChevronUp,
   ChevronDown,
@@ -10,6 +10,8 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Calendar,
+  X,
 } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 
@@ -25,6 +27,7 @@ interface DataTableProps<T extends object> {
   columns: ColumnDef<T>[];
   fetchUrl: string;
   extraParams?: Record<string, string>;
+  dateColumn?: string;
 }
 
 interface FetchState<T> {
@@ -38,14 +41,15 @@ interface FetchState<T> {
 function SortIcon({ col, currentCol, dir }: { col: string; currentCol: string; dir: 'asc' | 'desc' }) {
   if (col !== currentCol) return <ChevronsUpDown className="w-3 h-3 opacity-30" />;
   return dir === 'asc'
-    ? <ChevronUp className="w-3 h-3 text-blue-500" />
-    : <ChevronDown className="w-3 h-3 text-blue-500" />;
+    ? <ChevronUp className="w-3 h-3 text-blue-600" />
+    : <ChevronDown className="w-3 h-3 text-blue-600" />;
 }
 
 export default function DataTable<T extends object>({
   columns,
   fetchUrl,
   extraParams = {},
+  dateColumn,
 }: DataTableProps<T>) {
   const [state, setState] = useState<FetchState<T>>({
     data: [], total: 0, totalPages: 0, loading: false, error: null,
@@ -56,11 +60,28 @@ export default function DataTable<T extends object>({
   const [sortCol, setSortCol] = useState('');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [searchInput, setSearchInput] = useState('');
+  const [dateStart, setDateStart] = useState('');
+  const [dateEnd, setDateEnd] = useState('');
+
+  // Merge extra params with local date filter params
+  const mergedParams = useMemo(() => {
+    const p = { ...extraParams };
+    if (dateStart) p.startDate = dateStart;
+    if (dateEnd) p.endDate = dateEnd;
+    return p;
+  }, [extraParams, dateStart, dateEnd]);
 
   const fetchData = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), search, sortCol, sortDir, ...extraParams });
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+        search,
+        sortCol,
+        sortDir,
+        ...mergedParams,
+      });
       const res = await fetch(`${fetchUrl}?${params}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
@@ -68,10 +89,10 @@ export default function DataTable<T extends object>({
     } catch (err) {
       setState((prev) => ({ ...prev, loading: false, error: String(err) }));
     }
-  }, [fetchUrl, page, pageSize, search, sortCol, sortDir, extraParams]);
+  }, [fetchUrl, page, pageSize, search, sortCol, sortDir, mergedParams]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-  useEffect(() => { setPage(1); }, [JSON.stringify(extraParams)]); // eslint-disable-line
+  useEffect(() => { setPage(1); }, [JSON.stringify(mergedParams)]); // eslint-disable-line
 
   function handleSort(key: string) {
     if (sortCol === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -85,10 +106,16 @@ export default function DataTable<T extends object>({
     setPage(1);
   }
 
+  function clearDateFilter() {
+    setDateStart('');
+    setDateEnd('');
+    setPage(1);
+  }
+
   function renderCell(row: T, col: ColumnDef<T>) {
     if (col.render) return col.render(row);
     const val = row[col.key as keyof T];
-    if (val === null || val === undefined) return <span className="text-slate-300 dark:text-slate-700">—</span>;
+    if (val === null || val === undefined) return <span className="text-gray-300 dark:text-gray-700">{'\u2014'}</span>;
     if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val) && col.key.toString().includes('date')) {
       return formatDate(val);
     }
@@ -97,37 +124,77 @@ export default function DataTable<T extends object>({
 
   const start = (page - 1) * pageSize + 1;
   const end   = Math.min(page * pageSize, state.total);
+  const hasDateFilter = dateStart || dateEnd;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Search */}
         <form onSubmit={handleSearch} className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-600" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input
-              className="input pl-8 w-64 h-8 py-0 text-sm"
+              className="input pl-7 w-56 h-7 py-0 text-xs"
               placeholder="Search..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
           </div>
-          <button type="submit" className="btn-secondary h-8 px-3 py-0">Go</button>
+          <button type="submit" className="btn-secondary h-7 px-2.5 py-0 text-xs">Go</button>
           {search && (
             <button
               type="button"
               onClick={() => { setSearch(''); setSearchInput(''); setPage(1); }}
-              className="text-xs text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+              className="text-xs text-gray-400 hover:text-red-500 transition-colors"
             >
               Clear
             </button>
           )}
         </form>
 
-        <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-600">
+        {/* Date filter */}
+        {dateColumn && (
+          <div className="flex items-center gap-1.5 ml-auto">
+            <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <input
+              type="date"
+              value={dateStart}
+              onChange={(e) => { setDateStart(e.target.value); setPage(1); }}
+              className={cn(
+                'input h-7 py-0 text-xs w-32',
+                dateStart && 'border-blue-500/50 bg-blue-50 dark:bg-blue-900/15'
+              )}
+              placeholder="From"
+            />
+            <span className="text-gray-400 text-xs">\u2013</span>
+            <input
+              type="date"
+              value={dateEnd}
+              onChange={(e) => { setDateEnd(e.target.value); setPage(1); }}
+              className={cn(
+                'input h-7 py-0 text-xs w-32',
+                dateEnd && 'border-blue-500/50 bg-blue-50 dark:bg-blue-900/15'
+              )}
+              placeholder="To"
+            />
+            {hasDateFilter && (
+              <button
+                onClick={clearDateFilter}
+                className="text-gray-400 hover:text-red-500 transition-colors p-0.5"
+                title="Clear date filter"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Page size */}
+        <div className={cn('flex items-center gap-2 text-xs text-gray-400', !dateColumn && 'ml-auto')}>
           <span>Rows:</span>
           <select
-            className="input h-8 py-0 pr-7 text-xs"
+            className="input h-7 py-0 pr-6 text-xs"
             value={pageSize}
             onChange={(e) => { setPageSize(parseInt(e.target.value)); setPage(1); }}
           >
@@ -137,18 +204,18 @@ export default function DataTable<T extends object>({
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-[#0c1829] rounded-xl border border-slate-200 dark:border-[#162035] overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100 dark:border-[#162035] bg-slate-50 dark:bg-[#0a1628]">
+              <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/80">
                 {columns.map((col) => (
                   <th
                     key={String(col.key)}
                     className={cn('table-th', col.width && `w-${col.width}`)}
                     onClick={() => col.sortable !== false && handleSort(String(col.key))}
                   >
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
                       {col.header}
                       {col.sortable !== false && (
                         <SortIcon col={String(col.key)} currentCol={sortCol} dir={sortDir} />
@@ -158,13 +225,13 @@ export default function DataTable<T extends object>({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-[#0f1e36]">
+            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
               {state.loading ? (
                 <tr>
                   <td colSpan={columns.length} className="py-16 text-center">
-                    <div className="flex items-center justify-center gap-2 text-slate-400 dark:text-slate-600">
-                      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm">Loading…</span>
+                    <div className="flex items-center justify-center gap-2 text-gray-400">
+                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm">Loading...</span>
                     </div>
                   </td>
                 </tr>
@@ -176,7 +243,7 @@ export default function DataTable<T extends object>({
                 </tr>
               ) : state.data.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="py-16 text-center text-sm text-slate-400 dark:text-slate-700">
+                  <td colSpan={columns.length} className="py-16 text-center text-sm text-gray-400 dark:text-gray-600">
                     No results found
                   </td>
                 </tr>
@@ -199,9 +266,9 @@ export default function DataTable<T extends object>({
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-t border-slate-100 dark:border-[#0f1e36] bg-slate-50/50 dark:bg-[#0a1628]">
-          <p className="text-xs text-slate-400 dark:text-slate-600 tabular-nums">
-            {state.total > 0 ? `${start.toLocaleString()}–${end.toLocaleString()} of ${state.total.toLocaleString()}` : 'No results'}
+        <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/80">
+          <p className="text-xs text-gray-400 tabular-nums">
+            {state.total > 0 ? `${start.toLocaleString()}\u2013${end.toLocaleString()} of ${state.total.toLocaleString()}` : 'No results'}
           </p>
           <div className="flex items-center gap-0.5">
             {[
@@ -212,14 +279,14 @@ export default function DataTable<T extends object>({
             ].map((btn, i) => (
               <button
                 key={i}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 dark:text-slate-600 hover:bg-slate-200 dark:hover:bg-[#0f1e36] hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 onClick={btn.action}
                 disabled={btn.disabled}
               >
                 {btn.icon}
               </button>
             ))}
-            <span className="text-xs text-slate-400 dark:text-slate-600 px-2 tabular-nums">
+            <span className="text-xs text-gray-400 px-2 tabular-nums">
               {page} / {state.totalPages || 1}
             </span>
           </div>

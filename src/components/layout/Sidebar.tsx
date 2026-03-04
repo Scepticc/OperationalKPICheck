@@ -10,6 +10,7 @@ import {
   Upload,
   PanelLeftClose,
   PanelLeftOpen,
+  BarChart3,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -30,30 +31,30 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        'flex flex-col shrink-0 transition-all duration-300',
-        'bg-[#0f172a] dark:bg-[#040b17]',
-        'border-r border-slate-800/60 dark:border-[#0f1e36]',
-        collapsed ? 'w-[60px]' : 'w-56'
+        'flex flex-col shrink-0 transition-all duration-200',
+        'bg-gray-900 dark:bg-[#070b14]',
+        'border-r border-gray-800 dark:border-gray-900',
+        collapsed ? 'w-[56px]' : 'w-52'
       )}
     >
-      {/* Wordmark */}
+      {/* Brand */}
       <div className={cn(
-        'flex items-center gap-2.5 border-b border-slate-800/60 dark:border-[#0f1e36] shrink-0',
-        collapsed ? 'px-0 py-[18px] justify-center' : 'px-5 py-[18px]'
+        'flex items-center gap-2.5 border-b border-gray-800 dark:border-gray-900 shrink-0',
+        collapsed ? 'px-0 py-4 justify-center' : 'px-4 py-4'
       )}>
-        <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
-          <span className="text-white text-[11px] font-bold tracking-tight">KD</span>
+        <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
+          <BarChart3 className="w-3.5 h-3.5 text-white" />
         </div>
         {!collapsed && (
-          <div>
-            <p className="text-sm font-semibold text-white leading-tight">KPI Dashboard</p>
-            <p className="text-[10px] text-slate-500 tracking-widest uppercase mt-0.5">Warehouse Ops</p>
+          <div className="min-w-0">
+            <p className="text-[13px] font-semibold text-white leading-tight truncate">KPI Dashboard</p>
+            <p className="text-[9px] text-gray-500 tracking-widest uppercase mt-0.5">Financial Controlling</p>
           </div>
         )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-3 overflow-y-auto space-y-0.5">
+      <nav className="flex-1 py-2 overflow-y-auto">
         {NAV_ITEMS.map((item, idx) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -63,10 +64,10 @@ export default function Sidebar() {
           return (
             <div key={item.href}>
               {showSection && (
-                <div className={cn('pt-4 pb-1', collapsed ? 'px-3' : 'px-5')}>
+                <div className={cn('pt-4 pb-1.5', collapsed ? 'px-2' : 'px-4')}>
                   {collapsed
-                    ? <div className="h-px bg-slate-800/80 dark:bg-[#0f1e36]" />
-                    : <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-600 dark:text-slate-700">{item.section}</p>
+                    ? <div className="h-px bg-gray-800" />
+                    : <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-gray-600">{item.section}</p>
                   }
                 </div>
               )}
@@ -75,24 +76,22 @@ export default function Sidebar() {
                 href={item.href}
                 title={collapsed ? item.label : undefined}
                 className={cn(
-                  'relative flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm font-medium',
+                  'relative flex items-center gap-2.5 mx-1.5 px-2.5 py-2 rounded-md transition-colors duration-100 text-[13px] font-medium',
                   collapsed && 'justify-center px-0',
                   isActive
-                    ? 'bg-blue-600/[0.15] dark:bg-blue-500/[0.12] text-blue-300'
-                    : 'text-slate-500 hover:text-slate-200 hover:bg-white/5 dark:hover:bg-white/[0.04]'
+                    ? 'bg-blue-600/15 text-blue-400'
+                    : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
                 )}
               >
                 {isActive && !collapsed && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[22px] rounded-r-full bg-blue-500" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-r bg-blue-500" />
                 )}
                 <Icon className={cn(
-                  'shrink-0 w-[17px] h-[17px]',
-                  isActive ? 'text-blue-400' : 'text-slate-600'
+                  'shrink-0 w-4 h-4',
+                  isActive ? 'text-blue-400' : 'text-gray-600'
                 )} />
                 {!collapsed && (
-                  <span className={cn('truncate', isActive ? 'text-blue-200' : '')}>
-                    {item.label}
-                  </span>
+                  <span className="truncate">{item.label}</span>
                 )}
               </Link>
             </div>
@@ -104,7 +103,7 @@ export default function Sidebar() {
       <button
         onClick={() => setCollapsed(!collapsed)}
         className={cn(
-          'flex items-center gap-2 mb-4 mx-2 px-3 py-2 rounded-lg text-slate-700 hover:text-slate-300 hover:bg-white/5 dark:hover:bg-white/[0.04] transition-colors text-xs',
+          'flex items-center gap-2 mb-3 mx-1.5 px-2.5 py-2 rounded-md text-gray-600 hover:text-gray-400 hover:bg-white/5 transition-colors text-xs',
           collapsed && 'justify-center px-0'
         )}
         title={collapsed ? 'Expand' : 'Collapse'}

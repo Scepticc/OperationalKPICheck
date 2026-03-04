@@ -111,7 +111,7 @@ export default function InboundKPIsPage() {
   return (
     <div className="flex flex-col h-full">
       <Header title="Inbound KPIs" />
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-6 space-y-5">
         <FilterBar
           filters={filters}
           granularity={inboundFilters.granularity ?? 'day'}
@@ -122,52 +122,53 @@ export default function InboundKPIsPage() {
         {loading ? (
           <PageLoading />
         ) : error ? (
-          <div className="card p-6 text-center text-red-500">Error: {error}</div>
+          <div className="card p-6 text-center text-red-500 text-sm">Error: {error}</div>
         ) : (
           <>
             {/* Volume KPIs */}
-            <div>
-              <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                Volume
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            <section>
+              <h2 className="section-title mb-3">Volume</h2>
+              <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3">
                 <KPICard
                   title="Total Shipments"
                   kpi={kpis?.row_count}
                   format={(v) => formatNumber(v)}
                   icon={<Package className="w-4 h-4" />}
+                  accentColor="emerald"
                 />
                 <KPICard
                   title="Total Cartons Received"
                   kpi={kpis?.total_cartons}
                   format={(v) => formatNumber(v)}
                   icon={<Layers className="w-4 h-4" />}
+                  accentColor="emerald"
                 />
                 <KPICard
                   title="Total Pallets Received"
                   kpi={kpis?.total_pallets}
                   format={(v) => formatNumber(v)}
+                  accentColor="emerald"
                 />
                 <KPICard
                   title="Avg Cartons / Shipment"
                   kpi={kpis?.avg_cartons_per_shipment}
                   format={(v) => formatNumber(v, 1)}
+                  accentColor="emerald"
                 />
               </div>
-            </div>
+            </section>
 
             {/* Status KPIs */}
-            <div>
-              <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                Status & Compliance
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+            <section>
+              <h2 className="section-title mb-3">Status & Compliance</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
                 <KPICard
                   title="On-time Arrival Rate"
                   kpi={kpis?.on_time_arrival_rate}
                   format={(v) => formatPercent(v)}
                   icon={<CheckCircle className="w-4 h-4" />}
-                  description="Premisses In ≤ Planned Arrival"
+                  description="Premises In <= Planned Arrival"
+                  accentColor="emerald"
                 />
                 <KPICard
                   title="Arrival Status"
@@ -175,6 +176,7 @@ export default function InboundKPIsPage() {
                   format={(v) => formatPercent(v)}
                   icon={<ShieldCheck className="w-4 h-4" />}
                   description="% Arrival Status = Y"
+                  accentColor="emerald"
                 />
                 <KPICard
                   title="Pallet Status"
@@ -182,6 +184,7 @@ export default function InboundKPIsPage() {
                   format={(v) => formatPercent(v)}
                   icon={<Layers className="w-4 h-4" />}
                   description="% Pallet Status = Y"
+                  accentColor="blue"
                 />
                 <KPICard
                   title="Locate Status"
@@ -189,6 +192,7 @@ export default function InboundKPIsPage() {
                   format={(v) => formatPercent(v)}
                   icon={<MapPin className="w-4 h-4" />}
                   description="% Locate Status = Y"
+                  accentColor="blue"
                 />
                 <KPICard
                   title="Decon Completed"
@@ -196,23 +200,23 @@ export default function InboundKPIsPage() {
                   format={(v) => formatPercent(v)}
                   icon={<Scan className="w-4 h-4" />}
                   description="% Decon In = Y"
+                  accentColor="violet"
                 />
               </div>
-            </div>
+            </section>
 
             {/* Time KPIs */}
-            <div>
-              <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                Time Metrics
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <section>
+              <h2 className="section-title mb-3">Time Metrics</h2>
+              <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3">
                 <KPICard
                   title="Avg Unloading Time"
                   kpi={kpis?.avg_unloading_time}
                   format={(v) => formatMinutes(v)}
                   higherIsBetter={false}
                   icon={<Clock className="w-4 h-4" />}
-                  description="Unloading End − Unloading Start"
+                  description="Unloading End - Unloading Start"
+                  accentColor="violet"
                 />
                 <KPICard
                   title="Avg Truck Dwell Time"
@@ -220,7 +224,8 @@ export default function InboundKPIsPage() {
                   format={(v) => formatMinutes(v)}
                   higherIsBetter={false}
                   icon={<Truck className="w-4 h-4" />}
-                  description="Gate Out − Gate In"
+                  description="Gate Out - Gate In"
+                  accentColor="violet"
                 />
                 <KPICard
                   title="Avg Wait Before Unloading"
@@ -228,7 +233,8 @@ export default function InboundKPIsPage() {
                   format={(v) => formatMinutes(v)}
                   higherIsBetter={false}
                   icon={<TimerReset className="w-4 h-4" />}
-                  description="Unloading Start − Gate In"
+                  description="Unloading Start - Gate In"
+                  accentColor="violet"
                 />
                 <KPICard
                   title="Avg Decon Processing"
@@ -236,34 +242,38 @@ export default function InboundKPIsPage() {
                   format={(v) => formatMinutes(v)}
                   higherIsBetter={false}
                   icon={<Target className="w-4 h-4" />}
-                  description="Decon In − Unloading End"
+                  description="Decon In - Unloading End"
+                  accentColor="violet"
                 />
               </div>
-            </div>
+            </section>
 
             {/* Charts */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <div className="xl:col-span-2">
-                <TrendChart
-                  data={charts?.trend ?? []}
-                  granularity={inboundFilters.granularity ?? 'day'}
-                  title="Daily / Weekly / Monthly Carton Trend"
-                  valueKey="total_cartons"
-                  valueLabel="Cartons"
+            <section>
+              <h2 className="section-title mb-3">Analytics</h2>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div className="xl:col-span-2">
+                  <TrendChart
+                    data={charts?.trend ?? []}
+                    granularity={inboundFilters.granularity ?? 'day'}
+                    title="Carton Volume Trend"
+                    valueKey="total_cartons"
+                    valueLabel="Cartons"
+                  />
+                </div>
+                <CategoryBarChart
+                  data={charts?.by_customer ?? []}
+                  title="Cartons by Customer"
+                  onBarClick={(name) => setInboundFilters({ customer: name })}
+                />
+                <CategoryBarChart
+                  data={charts?.by_gate ?? []}
+                  title="Cartons by Gate"
+                  color="#059669"
+                  onBarClick={(name) => setInboundFilters({ gate: name })}
                 />
               </div>
-              <CategoryBarChart
-                data={charts?.by_customer ?? []}
-                title="Cartons by Customer"
-                onBarClick={(name) => setInboundFilters({ customer: name })}
-              />
-              <CategoryBarChart
-                data={charts?.by_gate ?? []}
-                title="Cartons by Gate"
-                color="#10b981"
-                onBarClick={(name) => setInboundFilters({ gate: name })}
-              />
-            </div>
+            </section>
           </>
         )}
       </div>

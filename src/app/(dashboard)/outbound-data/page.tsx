@@ -1,6 +1,5 @@
 'use client';
 
-import { useApp } from '@/context/AppContext';
 import Header from '@/components/layout/Header';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
 import { OutboundRow } from '@/types';
@@ -20,7 +19,7 @@ const COLUMNS: ColumnDef<OutboundRow>[] = [
         <span className={cn('badge', row.returned === 'Y' ? 'badge-red' : 'badge-gray')}>
           {row.returned}
         </span>
-      ) : <span className="text-slate-400">—</span>,
+      ) : <span className="text-gray-400">{'\u2014'}</span>,
   },
   { key: 'shipped_date', header: 'Shipped Date' },
   { key: 'loading_ref', header: 'Loading Ref' },
@@ -40,7 +39,7 @@ const COLUMNS: ColumnDef<OutboundRow>[] = [
         <span className={cn('badge', row.mixed === 'Y' ? 'badge-green' : 'badge-gray')}>
           {row.mixed}
         </span>
-      ) : <span className="text-slate-400">—</span>,
+      ) : <span className="text-gray-400">{'\u2014'}</span>,
   },
   {
     key: 'sorter_used',
@@ -50,7 +49,7 @@ const COLUMNS: ColumnDef<OutboundRow>[] = [
         <span className={cn('badge', row.sorter_used === 'Y' ? 'badge-green' : 'badge-gray')}>
           {row.sorter_used}
         </span>
-      ) : <span className="text-slate-400">—</span>,
+      ) : <span className="text-gray-400">{'\u2014'}</span>,
   },
   { key: 'wlr_remarks', header: 'WLR Remarks', sortable: false },
   { key: 'act_ship_to_code', header: 'Act Ship To Code' },
@@ -80,19 +79,14 @@ const COLUMNS: ColumnDef<OutboundRow>[] = [
 ];
 
 export default function OutboundDataPage() {
-  const { globalStartDate, globalEndDate } = useApp();
-
   return (
     <div className="flex flex-col h-full">
-      <Header title="Outbound Data" />
+      <Header title="Outbound Data" showDatePicker={false} />
       <div className="flex-1 p-6 overflow-auto">
         <DataTable
           columns={COLUMNS}
           fetchUrl="/api/outbound/data"
-          extraParams={{
-            startDate: globalStartDate,
-            endDate: globalEndDate,
-          }}
+          dateColumn="shipped_date"
         />
       </div>
     </div>

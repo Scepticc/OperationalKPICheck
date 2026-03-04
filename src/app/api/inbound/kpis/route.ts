@@ -5,6 +5,28 @@ import { KPIValue } from '@/types';
 
 export const runtime = 'nodejs';
 
+// Regex check for valid HH:MM or HH:MM:SS format to prevent ::time cast failures
+const TIME_RE = `~ '^[0-9]{1,2}:[0-9]{2}(:[0-9]{2})?$'`;
+
+function safeTimeDiff(
+  endDateCol: string,
+  endTimeCol: string,
+  startDateCol: string,
+  startTimeCol: string
+) {
+  return `
+    CASE WHEN ${endDateCol} IS NOT NULL AND ${startDateCol} IS NOT NULL
+      AND ${endTimeCol} IS NOT NULL AND ${startTimeCol} IS NOT NULL
+      AND ${endTimeCol} <> '' AND ${startTimeCol} <> ''
+      AND ${endTimeCol} ${TIME_RE} AND ${startTimeCol} ${TIME_RE}
+      AND (${endDateCol} + ${endTimeCol}::time) > (${startDateCol} + ${startTimeCol}::time)
+      THEN EXTRACT(EPOCH FROM (
+        (${endDateCol} + ${endTimeCol}::time) - (${startDateCol} + ${startTimeCol}::time)
+      )) / 60.0
+      ELSE NULL END
+  `;
+}
+
 function buildFilters(
   startDate: string,
   endDate: string,
@@ -45,46 +67,10 @@ async function computeKPIs(
       CASE WHEN COUNT(DISTINCT shipment) > 0
         THEN ROUND(COALESCE(SUM(carton_count), 0) / COUNT(DISTINCT shipment)::numeric, 2)
         ELSE 0 END AS avg_cartons_per_shipment,
-      ROUND(AVG(
-        CASE WHEN unloading_end_date IS NOT NULL AND unloading_start_date IS NOT NULL
-          AND unloading_end_time IS NOT NULL AND unloading_start_time IS NOT NULL
-          AND unloading_end_time <> '' AND unloading_start_time <> ''
-          AND (unloading_end_date + unloading_end_time::time) > (unloading_start_date + unloading_start_time::time)
-          THEN EXTRACT(EPOCH FROM (
-            (unloading_end_date + unloading_end_time::time) - (unloading_start_date + unloading_start_time::time)
-          )) / 60.0
-          ELSE NULL END
-      )::numeric, 1) AS avg_unloading_time,
-      ROUND(AVG(
-        CASE WHEN gate_out_date IS NOT NULL AND gate_in_date IS NOT NULL
-          AND gate_out_time IS NOT NULL AND gate_in_time IS NOT NULL
-          AND gate_out_time <> '' AND gate_in_time <> ''
-          AND (gate_out_date + gate_out_time::time) > (gate_in_date + gate_in_time::time)
-          THEN EXTRACT(EPOCH FROM (
-            (gate_out_date + gate_out_time::time) - (gate_in_date + gate_in_time::time)
-          )) / 60.0
-          ELSE NULL END
-      )::numeric, 1) AS avg_dwell_time,
-      ROUND(AVG(
-        CASE WHEN unloading_start_date IS NOT NULL AND gate_in_date IS NOT NULL
-          AND unloading_start_time IS NOT NULL AND gate_in_time IS NOT NULL
-          AND unloading_start_time <> '' AND gate_in_time <> ''
-          AND (unloading_start_date + unloading_start_time::time) > (gate_in_date + gate_in_time::time)
-          THEN EXTRACT(EPOCH FROM (
-            (unloading_start_date + unloading_start_time::time) - (gate_in_date + gate_in_time::time)
-          )) / 60.0
-          ELSE NULL END
-      )::numeric, 1) AS avg_wait_before_unloading,
-      ROUND(AVG(
-        CASE WHEN decon_in_date IS NOT NULL AND unloading_end_date IS NOT NULL
-          AND decon_in_time IS NOT NULL AND unloading_end_time IS NOT NULL
-          AND decon_in_time <> '' AND unloading_end_time <> ''
-          AND (decon_in_date + decon_in_time::time) > (unloading_end_date + unloading_end_time::time)
-          THEN EXTRACT(EPOCH FROM (
-            (decon_in_date + decon_in_time::time) - (unloading_end_date + unloading_end_time::time)
-          )) / 60.0
-          ELSE NULL END
-      )::numeric, 1) AS avg_decon_time,
+      ROUND(AVG(${safeTimeDiff('unloading_end_date', 'unloading_end_time', 'unloading_start_date', 'unloading_start_time')})::numeric, 1) AS avg_unloading_time,
+      ROUND(AVG(${safeTimeDiff('gate_out_date', 'gate_out_time', 'gate_in_date', 'gate_in_time')})::numeric, 1) AS avg_dwell_time,
+      ROUND(AVG(${safeTimeDiff('unloading_start_date', 'unloading_start_time', 'gate_in_date', 'gate_in_time')})::numeric, 1) AS avg_wait_before_unloading,
+      ROUND(AVG(${safeTimeDiff('decon_in_date', 'decon_in_time', 'unloading_end_date', 'unloading_end_time')})::numeric, 1) AS avg_decon_time,
       CASE WHEN COUNT(*) FILTER (WHERE planned_arrival_date IS NOT NULL AND premises_in_date IS NOT NULL) > 0
         THEN ROUND(
           COUNT(*) FILTER (WHERE premises_in_date <= planned_arrival_date)::numeric * 100.0
