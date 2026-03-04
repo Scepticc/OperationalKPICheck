@@ -153,7 +153,7 @@ export default function OutboundKPIsPage() {
         {loading ? (
           <PageLoading />
         ) : error ? (
-          <div className="card p-6 text-center text-red-500 text-sm">Error: {error}</div>
+          <div className="card p-6 text-center text-red-400 text-sm">Error: {error}</div>
         ) : (
           <>
             {/* Volume KPIs */}
@@ -165,33 +165,33 @@ export default function OutboundKPIsPage() {
                   kpi={kpis?.row_count}
                   format={(v) => formatNumber(v)}
                   icon={<Package className="w-4 h-4" />}
-                  accentColor="blue"
+                  accentColor="lime"
                 />
                 <KPICard
                   title="Total Cartons"
                   kpi={kpis?.total_cartons}
                   format={(v) => formatNumber(v)}
                   icon={<Layers className="w-4 h-4" />}
-                  accentColor="blue"
+                  accentColor="lime"
                 />
                 <KPICard
                   title="Total Pallets"
                   kpi={kpis?.total_pallets}
                   format={(v) => formatNumber(v)}
-                  accentColor="blue"
+                  accentColor="lime"
                 />
                 <KPICard
                   title="Avg Cartons / Shipment"
                   kpi={kpis?.avg_cartons_per_shipment}
                   format={(v) => formatNumber(v, 1)}
-                  accentColor="blue"
+                  accentColor="lime"
                 />
                 <KPICard
                   title="Avg Cartons / Pallet"
                   kpi={kpis?.avg_cartons_per_pallet}
                   format={(v) => formatNumber(v, 1)}
                   description="Density indicator"
-                  accentColor="blue"
+                  accentColor="lime"
                 />
               </div>
             </section>
@@ -224,7 +224,7 @@ export default function OutboundKPIsPage() {
                   format={(v) => formatPercent(v)}
                   icon={<Wrench className="w-4 h-4" />}
                   description="% rows where Sorter Used = Y"
-                  accentColor="emerald"
+                  accentColor="cyan"
                 />
                 <KPICard
                   title="On-time Pickup Rate"
@@ -232,7 +232,7 @@ export default function OutboundKPIsPage() {
                   format={(v) => formatPercent(v)}
                   icon={<CheckCircle className="w-4 h-4" />}
                   description="Gate In <= Est. Pickup Date"
-                  accentColor="emerald"
+                  accentColor="cyan"
                 />
               </div>
             </section>
