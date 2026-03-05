@@ -32,22 +32,22 @@ export default function Sidebar() {
     <aside
       className={cn(
         'flex flex-col shrink-0 transition-all duration-300',
-        'bg-navy-950 border-r border-navy-800/40',
+        'bg-navy-900 border-r border-navy-800/60',
         collapsed ? 'w-[56px]' : 'w-56'
       )}
     >
       {/* Brand */}
       <div className={cn(
-        'flex items-center gap-3 border-b border-navy-800/40 shrink-0',
+        'flex items-center gap-3 border-b border-navy-800/60 shrink-0',
         collapsed ? 'px-0 py-4 justify-center' : 'px-4 py-4'
       )}>
         <div className="w-8 h-8 rounded-lg bg-lime-500 flex items-center justify-center shrink-0 shadow-lg shadow-lime-500/25">
-          <Zap className="w-4 h-4 text-navy-950" />
+          <Zap className="w-4 h-4 text-white" />
         </div>
         {!collapsed && (
           <div className="min-w-0">
             <p className="text-[13px] font-bold text-white leading-tight truncate">OpsKPI</p>
-            <p className="text-[9px] text-lime-500/60 tracking-[0.2em] uppercase mt-0.5">Control Center</p>
+            <p className="text-[9px] text-lime-400/60 tracking-[0.2em] uppercase mt-0.5">Control Center</p>
           </div>
         )}
       </div>
@@ -65,8 +65,8 @@ export default function Sidebar() {
               {showSection && (
                 <div className={cn('pt-5 pb-2', collapsed ? 'px-2' : 'px-4')}>
                   {collapsed
-                    ? <div className="h-px bg-navy-800/60" />
-                    : <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-navy-400/40">{item.section}</p>
+                    ? <div className="h-px bg-navy-700/60" />
+                    : <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-navy-400/50">{item.section}</p>
                   }
                 </div>
               )}
@@ -78,8 +78,8 @@ export default function Sidebar() {
                   'relative flex items-center gap-2.5 mx-2 px-3 py-2.5 rounded-lg transition-all duration-200 text-[13px] font-medium group',
                   collapsed && 'justify-center px-0',
                   isActive
-                    ? 'bg-lime-500/10 text-lime-400'
-                    : 'text-gray-500 hover:text-gray-300 hover:bg-navy-800/40'
+                    ? 'bg-lime-500/15 text-lime-400'
+                    : 'text-navy-300/70 hover:text-white hover:bg-navy-800/60'
                 )}
               >
                 {isActive && !collapsed && (
@@ -87,7 +87,7 @@ export default function Sidebar() {
                 )}
                 <Icon className={cn(
                   'shrink-0 w-4 h-4 transition-colors',
-                  isActive ? 'text-lime-400' : 'text-gray-600 group-hover:text-gray-400'
+                  isActive ? 'text-lime-400' : 'text-navy-400/60 group-hover:text-white'
                 )} />
                 {!collapsed && (
                   <span className="truncate">{item.label}</span>
@@ -102,7 +102,7 @@ export default function Sidebar() {
       <button
         onClick={() => setCollapsed(!collapsed)}
         className={cn(
-          'flex items-center gap-2 mb-3 mx-2 px-3 py-2.5 rounded-lg text-gray-600 hover:text-lime-400 hover:bg-navy-800/40 transition-all text-xs',
+          'flex items-center gap-2 mb-3 mx-2 px-3 py-2.5 rounded-lg text-navy-400/60 hover:text-lime-400 hover:bg-navy-800/60 transition-all text-xs',
           collapsed && 'justify-center px-0'
         )}
         title={collapsed ? 'Expand' : 'Collapse'}

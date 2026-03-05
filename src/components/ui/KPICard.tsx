@@ -20,10 +20,10 @@ function defaultFormat(val: number): string {
 }
 
 const accentMap = {
-  lime:   { bar: 'bg-lime-500',   icon: 'text-lime-400 bg-lime-500/10' },
-  cyan:   { bar: 'bg-cyan-400',   icon: 'text-cyan-400 bg-cyan-400/10' },
-  violet: { bar: 'bg-violet-400', icon: 'text-violet-400 bg-violet-400/10' },
-  amber:  { bar: 'bg-amber-400',  icon: 'text-amber-400 bg-amber-400/10' },
+  lime:   { bar: 'bg-lime-500',   icon: 'text-lime-600 bg-lime-50' },
+  cyan:   { bar: 'bg-cyan-500',   icon: 'text-cyan-600 bg-cyan-50' },
+  violet: { bar: 'bg-violet-500', icon: 'text-violet-600 bg-violet-50' },
+  amber:  { bar: 'bg-amber-500',  icon: 'text-amber-600 bg-amber-50' },
 };
 
 export default function KPICard({
@@ -48,10 +48,8 @@ export default function KPICard({
 
   return (
     <div className="kpi-card group animate-slide-up">
-      {/* Accent glow bar */}
-      <div className={cn('absolute top-0 left-0 right-0 h-[2px] opacity-30 group-hover:opacity-80 transition-opacity duration-300', accent.bar)} />
-      {/* Corner glow effect */}
-      <div className={cn('absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-500', accent.bar)} />
+      {/* Accent bar */}
+      <div className={cn('absolute top-0 left-0 right-0 h-[2px] opacity-40 group-hover:opacity-100 transition-opacity duration-300', accent.bar)} />
 
       <div className="relative">
         <div className="flex items-start justify-between mb-3">
@@ -66,7 +64,7 @@ export default function KPICard({
         </div>
 
         <div className="mb-3">
-          <span className="text-2xl font-extrabold text-white tabular-nums leading-none tracking-tight">
+          <span className="text-2xl font-extrabold text-navy-900 tabular-nums leading-none tracking-tight">
             {current !== null ? `${format(current)}${unit}` : '\u2014'}
           </span>
         </div>
@@ -74,9 +72,9 @@ export default function KPICard({
         {change !== null ? (
           <div className={cn(
             'inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full',
-            isGood && 'bg-lime-500/15 text-lime-400',
-            isBad  && 'bg-red-500/15 text-red-400',
-            !isGood && !isBad && 'bg-gray-500/10 text-gray-500'
+            isGood && 'bg-lime-50 text-lime-600',
+            isBad  && 'bg-red-50 text-red-600',
+            !isGood && !isBad && 'bg-gray-100 text-gray-500'
           )}>
             {isPositive ? <ArrowUp className="w-2.5 h-2.5" />
              : isNegative ? <ArrowDown className="w-2.5 h-2.5" />
@@ -85,11 +83,11 @@ export default function KPICard({
             <span className="font-normal text-[10px] opacity-60 ml-0.5">vs prev</span>
           </div>
         ) : (
-          <div className="text-[10px] font-medium text-gray-600">No prior data</div>
+          <div className="text-[10px] font-medium text-gray-400">No prior data</div>
         )}
 
         {description && (
-          <p className="mt-2 text-[10px] text-gray-600 leading-snug">{description}</p>
+          <p className="mt-2 text-[10px] text-gray-400 leading-snug">{description}</p>
         )}
       </div>
     </div>

@@ -20,22 +20,22 @@ interface DistributionPieChartProps {
   maxItems?: number;
 }
 
-const COLORS = ['#84cc16', '#22d3ee', '#a78bfa', '#fbbf24', '#f472b6', '#34d399', '#60a5fa', '#fb923c', '#f87171', '#2dd4bf'];
+const COLORS = ['#84cc16', '#1a2553', '#a78bfa', '#f59e0b', '#ec4899', '#10b981', '#3b82f6', '#f97316', '#ef4444', '#14b8a6'];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0];
   return (
-    <div className="bg-navy-900 border border-navy-700/60 rounded-xl shadow-xl shadow-black/20 p-3 text-sm backdrop-blur-sm">
-      <p className="text-xs font-semibold text-white mb-1 max-w-[180px] truncate">{d.name}</p>
+    <div className="bg-white border border-gray-200 rounded-xl shadow-xl p-3 text-sm">
+      <p className="text-xs font-semibold text-navy-900 mb-1 max-w-[180px] truncate">{d.name}</p>
       <div className="flex items-center justify-between gap-4">
         <span className="text-xs text-gray-500">Value</span>
-        <span className="text-xs font-semibold text-lime-400 tabular-nums">{Number(d.value).toLocaleString()}</span>
+        <span className="text-xs font-semibold text-lime-600 tabular-nums">{Number(d.value).toLocaleString()}</span>
       </div>
       <div className="flex items-center justify-between gap-4 mt-0.5">
         <span className="text-xs text-gray-500">Share</span>
-        <span className="text-xs font-semibold text-cyan-400 tabular-nums">{(d.payload.percent * 100).toFixed(1)}%</span>
+        <span className="text-xs font-semibold text-navy-700 tabular-nums">{(d.payload.percent * 100).toFixed(1)}%</span>
       </div>
     </div>
   );
@@ -50,7 +50,7 @@ export default function DistributionPieChart({
     return (
       <div className="card p-5">
         <p className="section-title mb-3">{title}</p>
-        <div className="h-44 flex items-center justify-center text-gray-600 text-sm">No data available</div>
+        <div className="h-44 flex items-center justify-center text-gray-400 text-sm">No data available</div>
       </div>
     );
   }
@@ -86,7 +86,7 @@ export default function DistributionPieChart({
             iconType="circle"
             iconSize={6}
             formatter={(value: string) => (
-              <span className="text-gray-400 text-[10px]">{value.length > 18 ? value.slice(0, 18) + '\u2026' : value}</span>
+              <span className="text-gray-600 text-[10px]">{value.length > 18 ? value.slice(0, 18) + '\u2026' : value}</span>
             )}
           />
         </PieChart>

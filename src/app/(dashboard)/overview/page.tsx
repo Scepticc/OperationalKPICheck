@@ -56,11 +56,11 @@ export default function OverviewPage() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-4 rounded-full bg-lime-500" />
-                  <h2 className="text-sm font-semibold text-white">Outbound Operations</h2>
+                  <h2 className="text-sm font-semibold text-navy-900">Outbound Operations</h2>
                 </div>
                 <Link
                   href="/outbound-kpis"
-                  className="flex items-center gap-1 text-xs font-medium text-lime-400 hover:text-lime-500 transition-colors"
+                  className="flex items-center gap-1 text-xs font-medium text-lime-600 hover:text-lime-700 transition-colors"
                 >
                   View details <ArrowRight className="w-3 h-3" />
                 </Link>
@@ -93,12 +93,12 @@ export default function OverviewPage() {
             <section>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-1 h-4 rounded-full bg-cyan-400" />
-                  <h2 className="text-sm font-semibold text-white">Inbound Operations</h2>
+                  <div className="w-1 h-4 rounded-full bg-navy-700" />
+                  <h2 className="text-sm font-semibold text-navy-900">Inbound Operations</h2>
                 </div>
                 <Link
                   href="/inbound-kpis"
-                  className="flex items-center gap-1 text-xs font-medium text-cyan-400 hover:text-cyan-400 transition-colors"
+                  className="flex items-center gap-1 text-xs font-medium text-navy-600 hover:text-navy-800 transition-colors"
                 >
                   View details <ArrowRight className="w-3 h-3" />
                 </Link>
@@ -132,10 +132,10 @@ export default function OverviewPage() {
               <p className="section-title mb-3">Quick Access</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { href: '/outbound-kpis', label: 'Outbound KPIs',  desc: 'Full outbound metrics',     icon: <TrendingUp className="w-4 h-4" />,  color: 'text-lime-400',    hoverBorder: 'hover:border-lime-500/30' },
-                  { href: '/inbound-kpis',  label: 'Inbound KPIs',   desc: 'Full inbound metrics',      icon: <TrendingDown className="w-4 h-4" />, color: 'text-cyan-400', hoverBorder: 'hover:border-cyan-400/30' },
-                  { href: '/outbound-data', label: 'Outbound Data',  desc: 'Browse outbound records',   icon: <Table2 className="w-4 h-4" />,      color: 'text-violet-400',  hoverBorder: 'hover:border-violet-400/30' },
-                  { href: '/import',        label: 'Import Data',    desc: 'Upload CSV files',          icon: <Upload className="w-4 h-4" />,      color: 'text-amber-400',   hoverBorder: 'hover:border-amber-400/30' },
+                  { href: '/outbound-kpis', label: 'Outbound KPIs',  desc: 'Full outbound metrics',     icon: <TrendingUp className="w-4 h-4" />,  color: 'text-lime-600',    hoverBorder: 'hover:border-lime-500/40' },
+                  { href: '/inbound-kpis',  label: 'Inbound KPIs',   desc: 'Full inbound metrics',      icon: <TrendingDown className="w-4 h-4" />, color: 'text-navy-600',    hoverBorder: 'hover:border-navy-500/30' },
+                  { href: '/outbound-data', label: 'Outbound Data',  desc: 'Browse outbound records',   icon: <Table2 className="w-4 h-4" />,      color: 'text-violet-600',  hoverBorder: 'hover:border-violet-400/30' },
+                  { href: '/import',        label: 'Import Data',    desc: 'Upload CSV files',          icon: <Upload className="w-4 h-4" />,      color: 'text-amber-600',   hoverBorder: 'hover:border-amber-400/30' },
                 ].map((item) => (
                   <Link
                     key={item.href}
@@ -144,10 +144,10 @@ export default function OverviewPage() {
                   >
                     <div className={`mt-0.5 shrink-0 ${item.color}`}>{item.icon}</div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{item.label}</p>
+                      <p className="text-sm font-semibold text-navy-900 truncate">{item.label}</p>
                       <p className="text-[11px] text-gray-500 mt-0.5 truncate">{item.desc}</p>
                     </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-gray-500 ml-auto shrink-0 mt-0.5" />
+                    <ArrowRight className="w-3.5 h-3.5 text-gray-400 ml-auto shrink-0 mt-0.5" />
                   </Link>
                 ))}
               </div>

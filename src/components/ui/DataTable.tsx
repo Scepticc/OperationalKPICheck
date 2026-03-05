@@ -41,8 +41,8 @@ interface FetchState<T> {
 function SortIcon({ col, currentCol, dir }: { col: string; currentCol: string; dir: 'asc' | 'desc' }) {
   if (col !== currentCol) return <ChevronsUpDown className="w-3 h-3 opacity-30" />;
   return dir === 'asc'
-    ? <ChevronUp className="w-3 h-3 text-lime-500" />
-    : <ChevronDown className="w-3 h-3 text-lime-500" />;
+    ? <ChevronUp className="w-3 h-3 text-lime-600" />
+    : <ChevronDown className="w-3 h-3 text-lime-600" />;
 }
 
 export default function DataTable<T extends object>({
@@ -118,7 +118,7 @@ export default function DataTable<T extends object>({
   function renderCell(row: T, col: ColumnDef<T>) {
     if (col.render) return col.render(row);
     const val = row[col.key as keyof T];
-    if (val === null || val === undefined) return <span className="text-gray-700">{'\u2014'}</span>;
+    if (val === null || val === undefined) return <span className="text-gray-400">{'\u2014'}</span>;
     if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val) && col.key.toString().includes('date')) {
       return formatDate(val);
     }
@@ -135,23 +135,23 @@ export default function DataTable<T extends object>({
       <div className="flex flex-wrap items-center gap-3">
         <form onSubmit={handleSearch} className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input className="input pl-7 w-56 h-8 py-0 text-xs" placeholder="Search..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
           </div>
           <button type="submit" className="btn-secondary h-8 px-3 py-0 text-xs">Go</button>
           {search && (
-            <button type="button" onClick={() => { setSearch(''); setSearchInput(''); setPage(1); }} className="text-xs text-gray-500 hover:text-red-400 transition-colors">Clear</button>
+            <button type="button" onClick={() => { setSearch(''); setSearchInput(''); setPage(1); }} className="text-xs text-gray-500 hover:text-red-500 transition-colors">Clear</button>
           )}
         </form>
 
         {dateColumn && (
           <div className="flex items-center gap-1.5 ml-auto">
-            <Calendar className="w-3.5 h-3.5 text-lime-500/50 shrink-0" />
-            <input type="date" value={dateStart} onChange={(e) => { setDateStart(e.target.value); setPage(1); }} className={cn('input h-8 py-0 text-xs w-32', dateStart && 'border-lime-500/40 bg-lime-500/5')} />
-            <span className="text-navy-600 text-xs">&ndash;</span>
-            <input type="date" value={dateEnd} onChange={(e) => { setDateEnd(e.target.value); setPage(1); }} className={cn('input h-8 py-0 text-xs w-32', dateEnd && 'border-lime-500/40 bg-lime-500/5')} />
+            <Calendar className="w-3.5 h-3.5 text-navy-500 shrink-0" />
+            <input type="date" value={dateStart} onChange={(e) => { setDateStart(e.target.value); setPage(1); }} className={cn('input h-8 py-0 text-xs w-32', dateStart && 'border-lime-500/50 bg-lime-50')} />
+            <span className="text-gray-400 text-xs">&ndash;</span>
+            <input type="date" value={dateEnd} onChange={(e) => { setDateEnd(e.target.value); setPage(1); }} className={cn('input h-8 py-0 text-xs w-32', dateEnd && 'border-lime-500/50 bg-lime-50')} />
             {hasDateFilter && (
-              <button onClick={clearDateFilter} className="text-gray-500 hover:text-red-400 transition-colors p-0.5" title="Clear date filter"><X className="w-3.5 h-3.5" /></button>
+              <button onClick={clearDateFilter} className="text-gray-400 hover:text-red-500 transition-colors p-0.5" title="Clear date filter"><X className="w-3.5 h-3.5" /></button>
             )}
           </div>
         )}
@@ -169,7 +169,7 @@ export default function DataTable<T extends object>({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-navy-800/40 bg-navy-900/60">
+              <tr className="border-b border-gray-200 bg-gray-50">
                 {columns.map((col) => (
                   <th key={String(col.key)} className={cn('table-th', col.width && `w-${col.width}`)} onClick={() => col.sortable !== false && handleSort(String(col.key))}>
                     <div className="flex items-center gap-1">
@@ -180,18 +180,18 @@ export default function DataTable<T extends object>({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-navy-800/30">
+            <tbody className="divide-y divide-gray-100">
               {state.loading ? (
                 <tr><td colSpan={columns.length} className="py-16 text-center">
-                  <div className="flex items-center justify-center gap-2 text-gray-500">
+                  <div className="flex items-center justify-center gap-2 text-gray-400">
                     <div className="w-4 h-4 border-2 border-lime-500 border-t-transparent rounded-full animate-spin" />
                     <span className="text-sm">Loading...</span>
                   </div>
                 </td></tr>
               ) : state.error ? (
-                <tr><td colSpan={columns.length} className="py-16 text-center text-sm text-red-400">Error: {state.error}</td></tr>
+                <tr><td colSpan={columns.length} className="py-16 text-center text-sm text-red-500">Error: {state.error}</td></tr>
               ) : state.data.length === 0 ? (
-                <tr><td colSpan={columns.length} className="py-16 text-center text-sm text-gray-600">No results found</td></tr>
+                <tr><td colSpan={columns.length} className="py-16 text-center text-sm text-gray-400">No results found</td></tr>
               ) : (
                 state.data.map((row, i) => (
                   <tr key={((row as Record<string, unknown>).id as string | number) ?? i} className="table-row">
@@ -206,7 +206,7 @@ export default function DataTable<T extends object>({
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-3 py-2.5 border-t border-navy-800/40 bg-navy-900/40">
+        <div className="flex items-center justify-between px-3 py-2.5 border-t border-gray-200 bg-gray-50/50">
           <p className="text-xs text-gray-500 tabular-nums">
             {state.total > 0 ? `${start.toLocaleString()}\u2013${end.toLocaleString()} of ${state.total.toLocaleString()}` : 'No results'}
           </p>
@@ -217,7 +217,7 @@ export default function DataTable<T extends object>({
               { icon: <ChevronRight className="w-3.5 h-3.5" />, action: () => handlePageChange(Math.min(state.totalPages, page + 1)), disabled: page >= state.totalPages },
               { icon: <ChevronsRight className="w-3.5 h-3.5" />, action: () => handlePageChange(state.totalPages), disabled: page >= state.totalPages },
             ].map((btn, idx) => (
-              <button key={idx} className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:bg-navy-800 hover:text-lime-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors" onClick={btn.action} disabled={btn.disabled}>
+              <button key={idx} className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-navy-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors" onClick={btn.action} disabled={btn.disabled}>
                 {btn.icon}
               </button>
             ))}
