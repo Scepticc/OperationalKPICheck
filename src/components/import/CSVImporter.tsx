@@ -2,6 +2,7 @@
 
 import { useState, useRef, DragEvent } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, X, RefreshCw, ArrowUpCircle, FileWarning } from 'lucide-react';
+import Papa from 'papaparse';
 import { cn } from '@/lib/utils';
 import { ImportResult } from '@/types';
 
@@ -14,9 +15,11 @@ interface CSVImporterProps {
 
 type ImportState =
   | { status: 'idle' }
-  | { status: 'loading' }
+  | { status: 'loading'; progress?: string }
   | { status: 'success'; result: ImportResult }
   | { status: 'error'; message: string };
+
+const BATCH_SIZE = 300;
 
 const accentStyles = {
   lime: {
@@ -47,25 +50,80 @@ export default function CSVImporter({ type, label, description, accent }: CSVImp
 
   async function uploadFile(file: File) {
     setFileName(file.name);
-    setState({ status: 'loading' });
+    setState({ status: 'loading', progress: 'Parsing CSV...' });
     setShowDuplicates(false);
 
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const res = await fetch(`/api/import/${type}`, { method: 'POST', body: formData });
-      const text = await res.text();
-      let data: Record<string, unknown>;
-      try { data = JSON.parse(text); } catch {
-        setState({ status: 'error', message: `Server error: ${text.slice(0, 300)}` });
+      const text = await file.text();
+      const parsed = Papa.parse<Record<string, string>>(text, {
+        header: true,
+        skipEmptyLines: true,
+      });
+
+      if (parsed.errors.length > 0 && parsed.data.length === 0) {
+        setState({ status: 'error', message: `Failed to parse CSV: ${parsed.errors[0]?.message ?? 'Unknown error'}` });
         return;
       }
-      if (!res.ok) {
-        setState({ status: 'error', message: (data.error as string) ?? 'Import failed' });
-      } else {
-        setState({ status: 'success', result: data as unknown as ImportResult });
+
+      const rows = parsed.data;
+      if (rows.length === 0) {
+        setState({ status: 'success', result: { inserted: 0, updated: 0, skipped: 0, total: 0, errors: [], duplicates: [] } });
+        return;
       }
+
+      const headers = Object.keys(rows[0]);
+      const totalBatches = Math.ceil(rows.length / BATCH_SIZE);
+
+      let totalInserted = 0;
+      let totalUpdated = 0;
+      const allErrors: string[] = [];
+      const allDuplicates: { row: number; key: string; action: 'updated' | 'skipped' }[] = [];
+
+      for (let i = 0; i < totalBatches; i++) {
+        const batchStart = i * BATCH_SIZE;
+        const batchRows = rows.slice(batchStart, batchStart + BATCH_SIZE);
+
+        setState({
+          status: 'loading',
+          progress: `Uploading batch ${i + 1} of ${totalBatches} (${Math.min(batchStart + BATCH_SIZE, rows.length)}/${rows.length} rows)...`,
+        });
+
+        const res = await fetch(`/api/import/${type}/batch`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ headers, rows: batchRows, batchIndex: batchStart }),
+        });
+
+        const responseText = await res.text();
+        let data: Record<string, unknown>;
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          setState({ status: 'error', message: `Server error on batch ${i + 1}: ${responseText.slice(0, 300)}` });
+          return;
+        }
+
+        if (!res.ok) {
+          setState({ status: 'error', message: (data.error as string) ?? `Batch ${i + 1} failed` });
+          return;
+        }
+
+        totalInserted += (data.inserted as number) ?? 0;
+        totalUpdated += (data.updated as number) ?? 0;
+        if (Array.isArray(data.errors)) allErrors.push(...(data.errors as string[]));
+        if (Array.isArray(data.duplicates)) allDuplicates.push(...(data.duplicates as { row: number; key: string; action: 'updated' | 'skipped' }[]));
+      }
+
+      const result: ImportResult = {
+        inserted: totalInserted,
+        updated: totalUpdated,
+        skipped: rows.length - totalInserted - totalUpdated - allErrors.length,
+        total: rows.length,
+        errors: allErrors.slice(0, 20),
+        duplicates: allDuplicates.slice(0, 100),
+      };
+
+      setState({ status: 'success', result });
     } catch (err) {
       setState({ status: 'error', message: String(err) });
     }
@@ -106,7 +164,7 @@ export default function CSVImporter({ type, label, description, accent }: CSVImp
               <p className="text-xs text-gray-500 mt-0.5">{description}</p>
             </div>
           </div>
-          {state.status !== 'idle' && (
+          {state.status !== 'idle' && !isLoading && (
             <button onClick={reset} className="text-gray-400 hover:text-gray-600 transition-colors">
               <X className="w-4 h-4" />
             </button>
@@ -136,7 +194,7 @@ export default function CSVImporter({ type, label, description, accent }: CSVImp
               <div className="w-8 h-8 border-3 border-gray-200 border-t-lime-500 rounded-full animate-spin" />
               <div>
                 <p className="text-sm font-medium text-gray-700">Processing...</p>
-                <p className="text-xs text-gray-400 mt-0.5">{fileName}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{state.status === 'loading' && state.progress ? state.progress : fileName}</p>
               </div>
             </div>
           ) : (
