@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     const parsed = Papa.parse<Record<string, string>>(csvChunk, {
       header: true,
       skipEmptyLines: true,
+      delimiter: ',',
     });
 
     const rows = parsed.data;
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
     const rawHeaders = Object.keys(rows[0]);
     const headerMap: Record<string, string> = {};
     for (const h of rawHeaders) {
-      const clean = h.replace(/^\uFEFF/, '');
+      const clean = h.replace(/^\uFEFF/, '').replace(/^["']+|["']+$/g, '').trim();
       const normalized = normalizeHeader(clean);
       const dbCol = INBOUND_COLUMN_MAP[normalized];
       if (dbCol) headerMap[h] = dbCol;
@@ -50,8 +51,12 @@ export async function POST(req: NextRequest) {
 
     const dbCols = [...new Set(Object.values(headerMap))];
     if (dbCols.length === 0) {
+      const normalizedSample = rawHeaders.slice(0, 10).map(h => {
+        const clean = h.replace(/^\uFEFF/, '').replace(/^["']+|["']+$/g, '').trim();
+        return `"${h}" → "${normalizeHeader(clean)}"`;
+      });
       return NextResponse.json(
-        { error: `No matching columns found. CSV headers: ${rawHeaders.slice(0, 10).join(' | ')}` },
+        { error: `No matching columns found. CSV headers: ${rawHeaders.join(', ')}. Normalized: ${normalizedSample.join(', ')}. Total headers: ${rawHeaders.length}` },
         { status: 400 }
       );
     }

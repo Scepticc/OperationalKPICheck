@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     const parsed = Papa.parse<Record<string, string>>(text, {
       header: true,
       skipEmptyLines: true,
+      delimiter: ',',
     });
 
     if (parsed.errors.length > 0 && parsed.data.length === 0) {
@@ -50,7 +51,8 @@ export async function POST(req: NextRequest) {
     const rawHeaders = Object.keys(rows[0]);
     const headerMap: Record<string, string> = {};
     for (const h of rawHeaders) {
-      const normalized = normalizeHeader(h);
+      const clean = h.replace(/^\uFEFF/, '').replace(/^["']+|["']+$/g, '').trim();
+      const normalized = normalizeHeader(clean);
       const dbCol = OUTBOUND_COLUMN_MAP[normalized];
       if (dbCol) headerMap[h] = dbCol;
     }
