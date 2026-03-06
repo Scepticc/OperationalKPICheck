@@ -2,6 +2,7 @@
 
 import { useState, useRef, DragEvent } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, X, RefreshCw, ArrowUpCircle, FileWarning } from 'lucide-react';
+import Papa from 'papaparse';
 import { cn } from '@/lib/utils';
 import { ImportResult } from '@/types';
 
@@ -49,24 +50,33 @@ export default function CSVImporter({ type, label, description, accent }: CSVImp
 
   async function uploadFile(file: File) {
     setFileName(file.name);
-    setState({ status: 'loading', progress: 'Reading file...' });
+    setState({ status: 'loading', progress: 'Parsing file...' });
     setShowDuplicates(false);
 
     try {
-      let text = await file.text();
-      // Strip BOM if present
-      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      // Parse CSV entirely on the client with PapaParse (handles encoding, delimiters, quoting)
+      const parsed = await new Promise<Papa.ParseResult<Record<string, string>>>((resolve) => {
+        Papa.parse<Record<string, string>>(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: resolve,
+        });
+      });
 
-      // Split into lines, keeping header separate
-      const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-      if (lines.length < 2) {
+      if (parsed.errors.length > 0 && parsed.data.length === 0) {
+        setState({ status: 'error', message: `Failed to parse CSV: ${parsed.errors[0]?.message}` });
+        return;
+      }
+
+      const allRows = parsed.data;
+      const headers = parsed.meta.fields ?? Object.keys(allRows[0] ?? {});
+
+      if (allRows.length === 0) {
         setState({ status: 'error', message: 'CSV file has no data rows' });
         return;
       }
 
-      const headerLine = lines[0];
-      const dataLines = lines.slice(1);
-      const totalRows = dataLines.length;
+      const totalRows = allRows.length;
       const totalBatches = Math.ceil(totalRows / BATCH_SIZE);
 
       let totalInserted = 0;
@@ -76,20 +86,17 @@ export default function CSVImporter({ type, label, description, accent }: CSVImp
 
       for (let i = 0; i < totalBatches; i++) {
         const batchStart = i * BATCH_SIZE;
-        const batchDataLines = dataLines.slice(batchStart, batchStart + BATCH_SIZE);
+        const batchRows = allRows.slice(batchStart, batchStart + BATCH_SIZE);
 
         setState({
           status: 'loading',
           progress: `Uploading batch ${i + 1} of ${totalBatches} (${Math.min(batchStart + BATCH_SIZE, totalRows)}/${totalRows} rows)...`,
         });
 
-        // Reconstruct a mini CSV: header + batch data lines
-        const csvChunk = headerLine + '\n' + batchDataLines.join('\n');
-
         const res = await fetch(`/api/import/${type}/batch`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ csvChunk, batchIndex: batchStart }),
+          body: JSON.stringify({ headers, rows: batchRows, batchIndex: batchStart }),
         });
 
         const responseText = await res.text();
