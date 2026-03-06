@@ -182,6 +182,7 @@ export const INBOUND_COLUMN_MAP: Record<string, string> = {
   unloading_date: 'unloading_date',
   planned_arrival_date: 'planned_arrival_date',
   planned_arrival_time: 'planned_arrival_time',
+  planned_arrival: 'planned_arrival',
   premisses_in_date: 'premises_in_date',
   premisses_in_time: 'premises_in_time',
   premises_in_date: 'premises_in_date',
@@ -190,8 +191,10 @@ export const INBOUND_COLUMN_MAP: Record<string, string> = {
   gate_in_time: 'gate_in_time',
   unloading_start_date: 'unloading_start_date',
   unloading_start_time: 'unloading_start_time',
+  unloading_start: 'unloading_start',
   unloading_end_date: 'unloading_end_date',
   unloading_end_time: 'unloading_end_time',
+  unloading_end: 'unloading_end',
   gate_out_date: 'gate_out_date',
   gate_out_time: 'gate_out_time',
   premisses_out_date: 'premises_out_date',
@@ -199,6 +202,7 @@ export const INBOUND_COLUMN_MAP: Record<string, string> = {
   premises_out_date: 'premises_out_date',
   premises_out_time: 'premises_out_time',
   sortkeys: 'sortkeys',
+  _sortkeys: 'sortkeys',
   pallet_count: 'pallet_count',
   us_pallet_count: 'us_pallet_count',
   st_pallet_count: 'st_pallet_count',
@@ -214,6 +218,16 @@ export const INBOUND_COLUMN_MAP: Record<string, string> = {
   'decon_in_plt#': 'decon_in_plt_num',
   decon_in_plt_: 'decon_in_plt_num',
   decon_in_plt_num: 'decon_in_plt_num',
+  // New CSV format columns
+  po_no_size_sorting: 'po_no_size_sorting',
+  ct_no_size_sorting: 'ct_no_size_sorting',
+  po_size_sorting: 'po_size_sorting',
+  ct_size_sorting: 'ct_size_sorting',
+  ct_sorter: 'ct_sorter',
+  ct_not_sorter: 'ct_not_sorter',
+  sorter: 'sorter_pct',
+  sorter_: 'sorter_pct',
+  sorter_pct: 'sorter_pct',
 };
 
 // ─── Numeric DB columns ───────────────────────────────────────────────────────
@@ -229,6 +243,12 @@ export const INBOUND_NUMERIC_COLS = new Set([
   'us_pallet_count',
   'st_pallet_count',
   'carton_count',
+  'po_no_size_sorting',
+  'ct_no_size_sorting',
+  'po_size_sorting',
+  'ct_size_sorting',
+  'ct_sorter',
+  'ct_not_sorter',
 ]);
 
 // ─── Date DB columns ──────────────────────────────────────────────────────────

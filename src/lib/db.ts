@@ -136,6 +136,16 @@ export async function initDb() {
         decon_in_date DATE,
         decon_in_time VARCHAR(10),
         decon_in_plt_num VARCHAR(100),
+        po_no_size_sorting NUMERIC,
+        ct_no_size_sorting NUMERIC,
+        po_size_sorting NUMERIC,
+        ct_size_sorting NUMERIC,
+        ct_sorter NUMERIC,
+        ct_not_sorter NUMERIC,
+        sorter_pct VARCHAR(20),
+        planned_arrival VARCHAR(50),
+        unloading_start VARCHAR(50),
+        unloading_end VARCHAR(50),
         created_at TIMESTAMPTZ DEFAULT NOW(),
         UNIQUE(shipment, container, unloading_date)
       )
@@ -160,6 +170,16 @@ export async function initDb() {
       `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS locate_date DATE`,
       `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS locate_time VARCHAR(10)`,
       `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS decon_in VARCHAR(10)`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS po_no_size_sorting NUMERIC`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS ct_no_size_sorting NUMERIC`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS po_size_sorting NUMERIC`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS ct_size_sorting NUMERIC`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS ct_sorter NUMERIC`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS ct_not_sorter NUMERIC`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS sorter_pct VARCHAR(20)`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS planned_arrival VARCHAR(50)`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS unloading_start VARCHAR(50)`,
+      `ALTER TABLE inbound_shipments ADD COLUMN IF NOT EXISTS unloading_end VARCHAR(50)`,
     ];
     for (const sql of [...outboundMigrations, ...inboundMigrations]) {
       await client.query(sql);
