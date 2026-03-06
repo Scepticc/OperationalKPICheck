@@ -54,13 +54,26 @@ export default function CSVImporter({ type, label, description, accent }: CSVImp
     setShowDuplicates(false);
 
     try {
-      // Parse CSV entirely on the client with PapaParse (handles encoding, delimiters, quoting)
-      const parsed = await new Promise<Papa.ParseResult<Record<string, string>>>((resolve) => {
-        Papa.parse<Record<string, string>>(file, {
-          header: true,
-          skipEmptyLines: true,
-          complete: resolve,
-        });
+      // Read file as text first for proper cleanup
+      let text = await file.text();
+      // Strip BOM if present
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+      // Detect delimiter: check first line for tabs or semicolons
+      const firstLine = text.split(/\r?\n/)[0] ?? '';
+      let delimiter = ',';
+      // Count potential delimiters outside quotes
+      const tabCount = (firstLine.match(/\t/g) ?? []).length;
+      const semiCount = (firstLine.match(/;/g) ?? []).length;
+      const commaCount = (firstLine.match(/,/g) ?? []).length;
+      if (tabCount > commaCount && tabCount > semiCount) delimiter = '\t';
+      else if (semiCount > commaCount) delimiter = ';';
+
+      // Parse CSV with detected delimiter
+      const parsed = Papa.parse<Record<string, string>>(text, {
+        header: true,
+        skipEmptyLines: true,
+        delimiter,
       });
 
       if (parsed.errors.length > 0 && parsed.data.length === 0) {
@@ -73,6 +86,16 @@ export default function CSVImporter({ type, label, description, accent }: CSVImp
 
       if (allRows.length === 0) {
         setState({ status: 'error', message: 'CSV file has no data rows' });
+        return;
+      }
+
+      // Debug: if only 1 header detected, show info about the file
+      if (headers.length <= 1) {
+        const charCodes = firstLine.slice(0, 100).split('').map(c => c.charCodeAt(0));
+        setState({
+          status: 'error',
+          message: `Delimiter detection failed. Detected: "${delimiter}" (tabs:${tabCount}, semis:${semiCount}, commas:${commaCount}). Headers found: ${headers.length}. First 100 char codes: [${charCodes.join(',')}]`,
+        });
         return;
       }
 
