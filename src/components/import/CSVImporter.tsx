@@ -59,21 +59,32 @@ export default function CSVImporter({ type, label, description, accent }: CSVImp
       // Strip BOM if present
       if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
 
-      // Detect delimiter: check first line for tabs or semicolons
-      const firstLine = text.split(/\r?\n/)[0] ?? '';
-      let delimiter = ',';
-      // Count potential delimiters outside quotes
-      const tabCount = (firstLine.match(/\t/g) ?? []).length;
-      const semiCount = (firstLine.match(/;/g) ?? []).length;
-      const commaCount = (firstLine.match(/,/g) ?? []).length;
-      if (tabCount > commaCount && tabCount > semiCount) delimiter = '\t';
-      else if (semiCount > commaCount) delimiter = ';';
+      // Fix malformed CSV: some exports wrap each line in an extra pair of
+      // quotes (e.g. "Unloading Date,""Shipment"",""Container"",...").
+      // This causes PapaParse to treat the entire line as one quoted field
+      // because "" is an escaped quote in CSV. Fix by unwrapping each line:
+      // strip the outer quotes and unescape "" → ".
+      text = text.replace(/\r\n|\r/g, '\n');
+      const lines = text.split('\n');
+      for (let li = 0; li < lines.length; li++) {
+        const line = lines[li];
+        // Detect: line starts with " and the content has ,""  patterns (escaped inner quotes)
+        if (line.startsWith('"') && line.includes(',""')) {
+          // Strip leading quote, strip trailing quote (and optional comma)
+          let fixed = line;
+          fixed = fixed.replace(/^"/, '');
+          fixed = fixed.replace(/",?\s*$/, '');
+          // Unescape doubled quotes back to single quotes
+          fixed = fixed.replace(/""/g, '"');
+          lines[li] = fixed;
+        }
+      }
+      text = lines.join('\n');
 
-      // Parse CSV with detected delimiter
+      // Parse cleaned CSV
       const parsed = Papa.parse<Record<string, string>>(text, {
         header: true,
         skipEmptyLines: true,
-        delimiter,
       });
 
       if (parsed.errors.length > 0 && parsed.data.length === 0) {
@@ -84,18 +95,8 @@ export default function CSVImporter({ type, label, description, accent }: CSVImp
       const allRows = parsed.data;
       const headers = parsed.meta.fields ?? Object.keys(allRows[0] ?? {});
 
-      if (allRows.length === 0) {
-        setState({ status: 'error', message: 'CSV file has no data rows' });
-        return;
-      }
-
-      // Debug: if only 1 header detected, show info about the file
-      if (headers.length <= 1) {
-        const charCodes = firstLine.slice(0, 100).split('').map(c => c.charCodeAt(0));
-        setState({
-          status: 'error',
-          message: `Delimiter detection failed. Detected: "${delimiter}" (tabs:${tabCount}, semis:${semiCount}, commas:${commaCount}). Headers found: ${headers.length}. First 100 char codes: [${charCodes.join(',')}]`,
-        });
+      if (allRows.length === 0 || headers.length <= 1) {
+        setState({ status: 'error', message: `CSV parsing failed. Headers found: ${headers.length}. Check file format.` });
         return;
       }
 
