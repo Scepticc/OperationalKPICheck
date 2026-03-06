@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     const parsed = Papa.parse<Record<string, string>>(csvChunk, {
       header: true,
       skipEmptyLines: true,
+      delimiter: ',',
     });
 
     const rows = parsed.data;
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
     const rawHeaders = Object.keys(rows[0]);
     const headerMap: Record<string, string> = {};
     for (const h of rawHeaders) {
-      const clean = h.replace(/^\uFEFF/, '');
+      const clean = h.replace(/^\uFEFF/, '').replace(/^["']+|["']+$/g, '').trim();
       const normalized = normalizeHeader(clean);
       const dbCol = OUTBOUND_COLUMN_MAP[normalized];
       if (dbCol) headerMap[h] = dbCol;
