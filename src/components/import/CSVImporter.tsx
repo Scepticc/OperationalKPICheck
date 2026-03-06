@@ -54,7 +54,10 @@ export default function CSVImporter({ type, label, description, accent }: CSVImp
     setShowDuplicates(false);
 
     try {
-      const text = await file.text();
+      let text = await file.text();
+      // Strip BOM if present
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
       const parsed = Papa.parse<Record<string, string>>(text, {
         header: true,
         skipEmptyLines: true,

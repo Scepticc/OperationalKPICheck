@@ -33,7 +33,9 @@ export async function POST(req: NextRequest) {
 
     const headerMap: Record<string, string> = {};
     for (const h of rawHeaders) {
-      const normalized = normalizeHeader(h);
+      // Strip BOM and normalize
+      const clean = h.replace(/^\uFEFF/, '');
+      const normalized = normalizeHeader(clean);
       const dbCol = OUTBOUND_COLUMN_MAP[normalized];
       if (dbCol) headerMap[h] = dbCol;
     }
@@ -41,7 +43,7 @@ export async function POST(req: NextRequest) {
     const dbCols = [...new Set(Object.values(headerMap))];
     if (dbCols.length === 0) {
       return NextResponse.json(
-        { error: `No matching columns found.` },
+        { error: `No matching columns found. CSV headers: ${rawHeaders.slice(0, 10).join(', ')}` },
         { status: 400 }
       );
     }
