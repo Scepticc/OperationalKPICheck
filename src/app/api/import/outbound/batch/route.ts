@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import Papa from 'papaparse';
 import { db, initDb } from '@/lib/db';
 import {
   normalizeHeader,
@@ -15,8 +16,7 @@ export const maxDuration = 60;
 const UNIQUE_KEY_COLS = ['order_number', 'shipment', 'shipped_date'];
 
 interface BatchRequest {
-  headers: string[];
-  rows: Record<string, string>[];
+  csvChunk: string;
   batchIndex: number;
 }
 
@@ -25,15 +25,23 @@ export async function POST(req: NextRequest) {
     await initDb();
 
     const body: BatchRequest = await req.json();
-    const { headers: rawHeaders, rows, batchIndex } = body;
+    const { csvChunk, batchIndex } = body;
 
+    // Parse the CSV chunk server-side with PapaParse
+    const parsed = Papa.parse<Record<string, string>>(csvChunk, {
+      header: true,
+      skipEmptyLines: true,
+    });
+
+    const rows = parsed.data;
     if (!rows || rows.length === 0) {
       return NextResponse.json({ inserted: 0, updated: 0, errors: [], duplicates: [] });
     }
 
+    // Map headers
+    const rawHeaders = Object.keys(rows[0]);
     const headerMap: Record<string, string> = {};
     for (const h of rawHeaders) {
-      // Strip BOM and normalize
       const clean = h.replace(/^\uFEFF/, '');
       const normalized = normalizeHeader(clean);
       const dbCol = OUTBOUND_COLUMN_MAP[normalized];
@@ -43,7 +51,7 @@ export async function POST(req: NextRequest) {
     const dbCols = [...new Set(Object.values(headerMap))];
     if (dbCols.length === 0) {
       return NextResponse.json(
-        { error: `No matching columns found. CSV headers: ${rawHeaders.slice(0, 10).join(', ')}` },
+        { error: `No matching columns found. CSV headers: ${rawHeaders.slice(0, 10).join(' | ')}` },
         { status: 400 }
       );
     }
