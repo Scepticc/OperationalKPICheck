@@ -6,10 +6,10 @@
 
 @layer base {
   * {
-    @apply border-navy-800/50;
+    @apply border-gray-200;
   }
   body {
-    @apply bg-navy-950 text-gray-100;
+    @apply bg-gray-50 text-gray-900;
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system;
     -webkit-font-smoothing: antialiased;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
@@ -18,59 +18,59 @@
 
 @layer components {
   .card {
-    @apply bg-navy-900/80 rounded-xl border border-navy-800/60 shadow-lg shadow-black/10
-           backdrop-blur-sm transition-all duration-200;
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm
+           transition-all duration-200;
   }
   .card-glow {
-    @apply card hover:border-lime-500/30 hover:shadow-lime-500/5 hover:shadow-xl;
+    @apply card hover:border-lime-500/40 hover:shadow-md hover:shadow-lime-500/5;
   }
   .btn-primary {
-    @apply bg-lime-500 hover:bg-lime-400 active:bg-lime-600 text-navy-950 font-semibold
+    @apply bg-lime-500 hover:bg-lime-400 active:bg-lime-600 text-white font-semibold
            px-4 py-2 rounded-lg transition-all text-sm
            disabled:opacity-40 disabled:cursor-not-allowed
-           shadow-lg shadow-lime-500/20 hover:shadow-lime-400/30;
+           shadow-md shadow-lime-500/20 hover:shadow-lime-400/30;
   }
   .btn-secondary {
-    @apply bg-navy-800/80 hover:bg-navy-800 text-gray-300 hover:text-lime-400
-           font-medium px-4 py-2 rounded-lg border border-navy-700/50
+    @apply bg-white hover:bg-gray-50 text-gray-600 hover:text-navy-700
+           font-medium px-4 py-2 rounded-lg border border-gray-200
            transition-all text-sm;
   }
   .input {
-    @apply bg-navy-900/80 border border-navy-700/50 rounded-lg px-3 py-2 text-sm text-gray-200
+    @apply bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800
            focus:outline-none focus:ring-2 focus:ring-lime-500/30 focus:border-lime-500/50
-           placeholder:text-gray-600 transition-all;
+           placeholder:text-gray-400 transition-all;
   }
   .label {
-    @apply text-[10px] font-semibold text-lime-500/70 uppercase tracking-wider;
+    @apply text-[10px] font-semibold text-navy-600 uppercase tracking-wider;
   }
   .kpi-card {
     @apply card-glow px-5 py-5 relative overflow-hidden;
   }
   .table-th {
-    @apply px-3 py-3 text-left text-[10px] font-bold text-lime-500/60
+    @apply px-3 py-3 text-left text-[10px] font-bold text-navy-600
            uppercase tracking-wider whitespace-nowrap cursor-pointer select-none
-           hover:text-lime-400 transition-colors;
+           hover:text-navy-800 transition-colors;
   }
   .table-td {
-    @apply px-3 py-3 text-sm text-gray-300 whitespace-nowrap;
+    @apply px-3 py-3 text-sm text-gray-700 whitespace-nowrap;
   }
   .table-row {
-    @apply hover:bg-lime-500/5 transition-colors;
+    @apply hover:bg-lime-50/60 transition-colors;
   }
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
   }
   .badge-green {
-    @apply badge bg-lime-500/15 text-lime-400 ring-1 ring-lime-500/30;
+    @apply badge bg-lime-50 text-lime-600 ring-1 ring-lime-200;
   }
   .badge-red {
-    @apply badge bg-red-500/15 text-red-400 ring-1 ring-red-500/30;
+    @apply badge bg-red-50 text-red-600 ring-1 ring-red-200;
   }
   .badge-gray {
-    @apply badge bg-gray-500/15 text-gray-400 ring-1 ring-gray-500/30;
+    @apply badge bg-gray-100 text-gray-500 ring-1 ring-gray-200;
   }
   .section-title {
-    @apply text-[11px] font-bold text-lime-500/50 uppercase tracking-[0.15em];
+    @apply text-[11px] font-bold text-navy-500 uppercase tracking-[0.15em];
   }
   .glow-line {
     @apply h-px bg-gradient-to-r from-transparent via-lime-500/30 to-transparent;
@@ -79,7 +79,7 @@
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { @apply bg-navy-700 rounded-full; }
-::-webkit-scrollbar-thumb:hover { @apply bg-lime-600; }
+::-webkit-scrollbar-thumb { @apply bg-gray-300 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-lime-500; }
 
 .recharts-tooltip-wrapper { @apply !shadow-xl; }

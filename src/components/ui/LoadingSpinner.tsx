@@ -19,7 +19,7 @@ export default function LoadingSpinner({
     <div className={cn('flex flex-col items-center justify-center gap-3', className)}>
       <div
         className={cn(
-          'border-[3px] border-navy-700 border-t-lime-500 rounded-full animate-spin',
+          'border-[3px] border-gray-200 border-t-lime-500 rounded-full animate-spin',
           sizes[size]
         )}
       />
