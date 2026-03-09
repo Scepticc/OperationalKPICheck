@@ -13,14 +13,20 @@ import {
   Legend,
 } from 'recharts';
 import { format, parseISO } from 'date-fns';
-import { TrendDataPoint } from '@/types';
+import { TimeTrendPoint } from '@/types';
 
-interface TrendChartProps {
-  data: TrendDataPoint[];
+interface SeriesConfig {
+  key: string;
+  label: string;
+  color: string;
+  type: 'bar' | 'line';
+}
+
+interface OperationsTimeTrendProps {
+  data: TimeTrendPoint[];
   granularity?: string;
   title?: string;
-  valueKey?: keyof TrendDataPoint;
-  valueLabel?: string;
+  series: SeriesConfig[];
 }
 
 const dateFormats: Record<string, string> = {
@@ -35,8 +41,6 @@ function ceilNice(v: number): number {
   return Math.ceil(v / order) * order;
 }
 
-const fmtAxis = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v));
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomTooltip({ active, payload, label, granularity }: any) {
   if (!active || !payload?.length) return null;
@@ -48,14 +52,14 @@ function CustomTooltip({ active, payload, label, granularity }: any) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-xl p-3 text-sm">
       <p className="text-[10px] font-medium uppercase tracking-wider text-navy-500 mb-2">{formattedDate}</p>
-      {payload.map((p: { name: string; value: number; color: string }) => (
+      {payload.map((p: { name: string; value: number | null; color: string }) => (
         <div key={p.name} className="flex items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
             <span className="text-xs text-gray-500">{p.name}</span>
           </div>
           <span className="text-xs font-medium text-navy-900 tabular-nums">
-            {p.value?.toLocaleString('en-US', { maximumFractionDigits: 1 }) ?? '—'}
+            {p.value != null ? `${Number(p.value).toFixed(1)} min` : '—'}
           </span>
         </div>
       ))}
@@ -63,30 +67,28 @@ function CustomTooltip({ active, payload, label, granularity }: any) {
   );
 }
 
-export default function TrendChart({
+export default function OperationsTimeTrend({
   data,
   granularity = 'day',
-  title = 'Carton Trend',
-  valueKey = 'total_cartons',
-  valueLabel = 'Cartons',
-}: TrendChartProps) {
+  title = 'Operations Time Trend',
+  series,
+}: OperationsTimeTrendProps) {
   const fmt = dateFormats[granularity] ?? 'dd MMM';
   const formatted = useMemo(() => data.map((d) => ({
     ...d,
-    period: d.period,
     label: (() => { try { return format(parseISO(d.period), fmt); } catch { return d.period; } })(),
   })), [data, fmt]);
 
-  const hasShipments = useMemo(() => data.some((d) => Number(d.shipment_count ?? 0) > 0), [data]);
-
-  const { leftMax, rightMax } = useMemo(() => {
-    const lMax = Math.max(0, ...data.map((d) => Number(d[valueKey] ?? 0)));
-    const rMax = Math.max(0, ...data.map((d) => Number(d.shipment_count ?? 0)));
-    return {
-      leftMax: ceilNice(lMax * 1.2),
-      rightMax: ceilNice(rMax * 1.2),
-    };
-  }, [data, valueKey]);
+  const yMax = useMemo(() => {
+    let max = 0;
+    for (const d of data) {
+      for (const s of series) {
+        const v = Number((d as unknown as Record<string, unknown>)[s.key] ?? 0);
+        if (v > max) max = v;
+      }
+    }
+    return ceilNice(max * 1.2);
+  }, [data, series]);
 
   if (!data.length) {
     return (
@@ -97,23 +99,25 @@ export default function TrendChart({
     );
   }
 
+  const barSeries = series.filter((s) => s.type === 'bar');
+  const lineSeries = series.filter((s) => s.type === 'line');
+
   return (
     <div className="card p-5">
       <p className="section-title mb-4">{title}</p>
       <ResponsiveContainer width="100%" height={280}>
-        <ComposedChart data={formatted} margin={{ top: 16, right: hasShipments ? 12 : 24, left: 0, bottom: 20 }}>
+        <ComposedChart data={formatted} margin={{ top: 16, right: 24, left: 0, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickMargin={8} angle={-35} textAnchor="end" interval="preserveStartEnd" height={40} />
-          <YAxis yAxisId="left" tick={{ fontSize: 10, fill: '#84cc16' }} axisLine={false} tickLine={false} tickFormatter={fmtAxis} width={48} domain={[0, leftMax]} allowDataOverflow={false} />
-          {hasShipments && (
-            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: '#0f1a3e' }} axisLine={false} tickLine={false} tickFormatter={fmtAxis} width={48} domain={[0, rightMax]} allowDataOverflow={false} />
-          )}
-          <Tooltip content={<CustomTooltip granularity={granularity} />} cursor={{ fill: 'rgba(132,204,22,0.06)' }} />
+          <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} width={48} domain={[0, yMax]} allowDataOverflow={false} />
+          <Tooltip content={<CustomTooltip granularity={granularity} />} cursor={{ fill: 'rgba(139,92,246,0.06)' }} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10, color: '#6b7280' }} iconType="circle" iconSize={6} />
-          <Bar yAxisId="left" dataKey={valueKey as string} name={valueLabel} fill="#84cc16" opacity={0.75} radius={[3, 3, 0, 0]} barSize={14} />
-          {hasShipments && (
-            <Line yAxisId="right" type="monotone" dataKey="shipment_count" name="Shipments" stroke="#0f1a3e" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#0f1a3e', strokeWidth: 0 }} />
-          )}
+          {barSeries.map((s) => (
+            <Bar key={s.key} dataKey={s.key} name={s.label} fill={s.color} opacity={0.75} radius={[3, 3, 0, 0]} barSize={10} />
+          ))}
+          {lineSeries.map((s) => (
+            <Line key={s.key} type="monotone" dataKey={s.key} name={s.label} stroke={s.color} strokeWidth={2} dot={false} activeDot={{ r: 4, fill: s.color, strokeWidth: 0 }} />
+          ))}
         </ComposedChart>
       </ResponsiveContainer>
     </div>
