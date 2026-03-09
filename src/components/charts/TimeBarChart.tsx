@@ -28,10 +28,10 @@ function CustomTooltip({ active, payload, unit }: any) {
   const d = payload[0];
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-xl p-3 text-sm">
-      <p className="text-xs font-semibold text-navy-900 mb-1.5 max-w-[200px] truncate">{d.payload.name}</p>
+      <p className="text-xs font-medium text-navy-900 mb-1.5 max-w-[200px] truncate">{d.payload.name}</p>
       <div className="flex justify-between gap-6">
         <span className="text-xs text-gray-500">Avg Time</span>
-        <span className="text-xs font-semibold text-violet-600 tabular-nums">
+        <span className="text-xs font-medium text-violet-600 tabular-nums">
           {d.value != null ? `${Number(d.value).toFixed(1)} ${unit}` : '—'}
         </span>
       </div>
@@ -63,10 +63,10 @@ export default function TimeBarChart({
     <div className="card p-5">
       <p className="section-title mb-4">{title}</p>
       <ResponsiveContainer width="100%" height={Math.max(200, filtered.length * 28)}>
-        <BarChart data={filtered} layout="vertical" margin={{ top: 0, right: 8, left: 0, bottom: 0 }} barSize={10}>
+        <BarChart data={filtered} layout="vertical" margin={{ top: 0, right: 8, left: 4, bottom: 0 }} barSize={10}>
           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
           <XAxis type="number" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} width={100} tickFormatter={(val: string) => val.length > 14 ? val.slice(0, 14) + '\u2026' : val} />
+          <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} width={120} tickFormatter={(val: string) => val.length > 18 ? val.slice(0, 18) + '\u2026' : val} />
           <Tooltip content={<CustomTooltip unit={unit} />} cursor={{ fill: 'rgba(139,92,246,0.06)' }} />
           <Bar dataKey="avg_time" name="Avg Time" radius={[0, 4, 4, 0]}>
             {filtered.map((entry, index) => (

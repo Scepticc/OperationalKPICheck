@@ -28,14 +28,14 @@ function CustomTooltip({ active, payload }: any) {
   const d = payload[0];
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-xl p-3 text-sm">
-      <p className="text-xs font-semibold text-navy-900 mb-1 max-w-[180px] truncate">{d.name}</p>
+      <p className="text-xs font-medium text-navy-900 mb-1 max-w-[180px] truncate">{d.name}</p>
       <div className="flex items-center justify-between gap-4">
         <span className="text-xs text-gray-500">Value</span>
-        <span className="text-xs font-semibold text-lime-600 tabular-nums">{Number(d.value).toLocaleString()}</span>
+        <span className="text-xs font-medium text-lime-600 tabular-nums">{Number(d.value).toLocaleString()}</span>
       </div>
       <div className="flex items-center justify-between gap-4 mt-0.5">
         <span className="text-xs text-gray-500">Share</span>
-        <span className="text-xs font-semibold text-navy-700 tabular-nums">{(d.payload.percent * 100).toFixed(1)}%</span>
+        <span className="text-xs font-medium text-navy-700 tabular-nums">{(d.payload.percent * 100).toFixed(1)}%</span>
       </div>
     </div>
   );
