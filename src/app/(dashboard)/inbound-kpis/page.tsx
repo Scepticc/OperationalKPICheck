@@ -9,6 +9,7 @@ import TrendChart from '@/components/charts/TrendChart';
 import AreaTrendChart from '@/components/charts/AreaTrendChart';
 import CategoryBarChart from '@/components/charts/CategoryBarChart';
 import DistributionPieChart from '@/components/charts/DistributionPieChart';
+import TimeBarChart from '@/components/charts/TimeBarChart';
 import { PageLoading } from '@/components/ui/LoadingSpinner';
 import { InboundKPIs, InboundCharts, FilterOptions } from '@/types';
 import { formatNumber, formatPercent, formatMinutes } from '@/lib/utils';
@@ -273,16 +274,19 @@ export default function InboundKPIsPage() {
               <h2 className="section-title mb-3">Distribution</h2>
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
                 <DistributionPieChart
-                  data={(charts?.by_customer ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
-                  title="Carton Share by Customer"
-                />
-                <DistributionPieChart
                   data={(charts?.by_gate ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
                   title="Carton Share by Gate"
                 />
                 <DistributionPieChart
-                  data={(charts?.by_warehouse ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
-                  title="Carton Share by Warehouse"
+                  data={(charts?.by_gate ?? []).map(d => ({ name: d.name, value: Number(d.shipment_count) }))}
+                  title="Shipment Share by Gate"
+                />
+                <TrendChart
+                  data={(charts?.pallet_trend ?? []).map(d => ({ period: d.period, total_cartons: Number(d.total_pallets), shipment_count: 0 }))}
+                  granularity={inboundFilters.granularity ?? 'day'}
+                  title="Pallet Volume Trend"
+                  valueKey="total_cartons"
+                  valueLabel="Pallets"
                 />
               </div>
             </section>
@@ -291,15 +295,14 @@ export default function InboundKPIsPage() {
               <h2 className="section-title mb-3">Breakdown</h2>
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <CategoryBarChart
-                  data={charts?.by_customer ?? []}
-                  title="Cartons by Customer"
-                  onBarClick={(name) => setInboundFilters({ customer: name })}
-                />
-                <CategoryBarChart
                   data={charts?.by_gate ?? []}
                   title="Cartons by Gate"
                   color="#059669"
                   onBarClick={(name) => setInboundFilters({ gate: name })}
+                />
+                <TimeBarChart
+                  data={charts?.time_by_gate ?? []}
+                  title="Avg Unloading Time by Gate"
                 />
               </div>
             </section>

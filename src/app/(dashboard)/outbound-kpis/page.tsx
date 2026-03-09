@@ -9,6 +9,7 @@ import TrendChart from '@/components/charts/TrendChart';
 import AreaTrendChart from '@/components/charts/AreaTrendChart';
 import CategoryBarChart from '@/components/charts/CategoryBarChart';
 import DistributionPieChart from '@/components/charts/DistributionPieChart';
+import TimeBarChart from '@/components/charts/TimeBarChart';
 import { PageLoading } from '@/components/ui/LoadingSpinner';
 import { OutboundKPIs, OutboundCharts, FilterOptions } from '@/types';
 import {
@@ -301,16 +302,16 @@ export default function OutboundKPIsPage() {
               <h2 className="section-title mb-3">Distribution</h2>
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
                 <DistributionPieChart
-                  data={(charts?.by_customer ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
-                  title="Carton Share by Customer"
-                />
-                <DistributionPieChart
                   data={(charts?.by_country ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
                   title="Carton Share by Country"
                 />
                 <DistributionPieChart
-                  data={(charts?.by_warehouse ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
-                  title="Carton Share by Warehouse"
+                  data={(charts?.by_dock ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                  title="Carton Share by Dock"
+                />
+                <DistributionPieChart
+                  data={(charts?.by_route ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                  title="Carton Share by Route"
                 />
               </div>
             </section>
@@ -318,11 +319,6 @@ export default function OutboundKPIsPage() {
             <section>
               <h2 className="section-title mb-3">Breakdown</h2>
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                <CategoryBarChart
-                  data={charts?.by_customer ?? []}
-                  title="Cartons by Customer"
-                  onBarClick={(name) => setOutboundFilters({ customer: name })}
-                />
                 <CategoryBarChart
                   data={charts?.by_country ?? []}
                   title="Cartons by Country"
@@ -340,6 +336,10 @@ export default function OutboundKPIsPage() {
                   title="Cartons by Route"
                   color="#7c3aed"
                   onBarClick={(name) => setOutboundFilters({ route: name })}
+                />
+                <TimeBarChart
+                  data={charts?.time_by_dock ?? []}
+                  title="Avg Loading Time by Dock"
                 />
               </div>
             </section>
