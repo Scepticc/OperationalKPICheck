@@ -80,7 +80,7 @@ export default function TrendChart({
     <div className="card p-5">
       <p className="section-title mb-4">{title}</p>
       <ResponsiveContainer width="100%" height={220}>
-        <LineChart data={formatted} margin={{ top: 4, right: 8, left: 0, bottom: 20 }}>
+        <LineChart data={formatted} margin={{ top: 4, right: 24, left: 0, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickMargin={8} angle={-35} textAnchor="end" interval="preserveStartEnd" height={40} />
           <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v} width={48} />
