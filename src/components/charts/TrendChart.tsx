@@ -79,11 +79,11 @@ export default function TrendChart({
   return (
     <div className="card p-5">
       <p className="section-title mb-4">{title}</p>
-      <ResponsiveContainer width="100%" height={220}>
-        <LineChart data={formatted} margin={{ top: 4, right: 24, left: 0, bottom: 20 }}>
+      <ResponsiveContainer width="100%" height={260}>
+        <LineChart data={formatted} margin={{ top: 12, right: 24, left: 0, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickMargin={8} angle={-35} textAnchor="end" interval="preserveStartEnd" height={40} />
-          <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v} width={48} />
+          <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v} width={48} domain={[0, 'auto']} allowDataOverflow={false} />
           <Tooltip content={<CustomTooltip granularity={granularity} />} cursor={{ stroke: '#84cc16', strokeWidth: 1, strokeDasharray: '4 4', strokeOpacity: 0.3 }} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10, color: '#6b7280' }} iconType="circle" iconSize={6} />
           <Line type="monotone" dataKey={valueKey as string} name={valueLabel} stroke="#84cc16" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#84cc16', strokeWidth: 0 }} />
