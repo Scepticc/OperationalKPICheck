@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { format, subDays, subMonths, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, subMonths, startOfYear, startOfDay, endOfDay } from 'date-fns';
 
 // ─── Class merging ────────────────────────────────────────────────────────────
 
@@ -12,7 +12,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getDefaultDateRange(): { startDate: string; endDate: string } {
   const end = new Date();
-  const start = subDays(end, 30);
+  const start = startOfYear(end);
   return {
     startDate: format(startOfDay(start), 'yyyy-MM-dd'),
     endDate: format(endOfDay(end), 'yyyy-MM-dd'),
@@ -47,8 +47,8 @@ export function getDateRangeOptions() {
   const today = new Date();
   return [
     {
-      label: 'Last 7 days',
-      startDate: format(subDays(today, 7), 'yyyy-MM-dd'),
+      label: 'YTD',
+      startDate: format(startOfYear(today), 'yyyy-MM-dd'),
       endDate: format(today, 'yyyy-MM-dd'),
     },
     {
