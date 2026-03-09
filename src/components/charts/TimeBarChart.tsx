@@ -65,7 +65,7 @@ export default function TimeBarChart({
       <ResponsiveContainer width="100%" height={Math.max(200, filtered.length * 28)}>
         <BarChart data={filtered} layout="vertical" margin={{ top: 0, right: 8, left: 4, bottom: 0 }} barSize={10}>
           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
-          <XAxis type="number" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} />
+          <XAxis type="number" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} domain={[0, (max: number) => Math.ceil(max * 1.4)]} />
           <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} width={120} tickFormatter={(val: string) => val.length > 18 ? val.slice(0, 18) + '\u2026' : val} />
           <Tooltip content={<CustomTooltip unit={unit} />} cursor={{ fill: 'rgba(139,92,246,0.06)' }} />
           <Bar dataKey="avg_time" name="Avg Time" radius={[0, 4, 4, 0]}>

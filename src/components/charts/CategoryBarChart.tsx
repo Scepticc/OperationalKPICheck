@@ -72,7 +72,7 @@ export default function CategoryBarChart({
       <ResponsiveContainer width="100%" height={Math.max(200, sliced.length * 28)}>
         <BarChart data={sliced} layout="vertical" margin={{ top: 0, right: 8, left: 4, bottom: 0 }} barSize={10}>
           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
-          <XAxis type="number" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+          <XAxis type="number" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} domain={[0, (max: number) => Math.ceil(max * 1.4)]} />
           <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} width={120} tickFormatter={(val: string) => val.length > 18 ? val.slice(0, 18) + '\u2026' : val} />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(132,204,22,0.06)' }} />
           <Bar dataKey={valueKey as string} name="Cartons" radius={[0, 4, 4, 0]} cursor={onBarClick ? 'pointer' : undefined} onClick={onBarClick ? (d) => onBarClick(d.name as string) : undefined}>
