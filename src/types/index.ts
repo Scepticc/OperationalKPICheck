@@ -145,6 +145,16 @@ export interface CategoryDataPoint {
   shipment_count: number;
 }
 
+export interface TimeDataPoint {
+  name: string;
+  avg_time: number | null;
+}
+
+export interface PalletTrendPoint {
+  period: string;
+  total_pallets: number;
+}
+
 export interface OutboundCharts {
   trend: TrendDataPoint[];
   by_customer: CategoryDataPoint[];
@@ -152,6 +162,8 @@ export interface OutboundCharts {
   by_dock: CategoryDataPoint[];
   by_route: CategoryDataPoint[];
   by_warehouse: CategoryDataPoint[];
+  time_by_dock: TimeDataPoint[];
+  pallet_trend: PalletTrendPoint[];
 }
 
 export interface InboundCharts {
@@ -159,6 +171,8 @@ export interface InboundCharts {
   by_customer: CategoryDataPoint[];
   by_gate: CategoryDataPoint[];
   by_warehouse: CategoryDataPoint[];
+  time_by_gate: TimeDataPoint[];
+  pallet_trend: PalletTrendPoint[];
 }
 
 // ─── Filter types ─────────────────────────────────────────────────────────────

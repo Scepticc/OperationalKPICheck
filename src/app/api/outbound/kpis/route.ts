@@ -123,7 +123,7 @@ async function computeTrends(
   const safe_gran = ['day', 'week', 'month'].includes(granularity) ? granularity : 'day';
   const andOrWhere = where ? 'AND' : 'WHERE';
 
-  const [byCustomer, byCountry, byDock, byRoute, byWarehouse, trend] = await Promise.all([
+  const [byCustomer, byCountry, byDock, byRoute, byWarehouse, trend, timeByDock, palletTrend] = await Promise.all([
     client.query(
       `SELECT act_ship_to_name AS name, COALESCE(SUM(cartons),0) AS total_cartons, COUNT(DISTINCT shipment) AS shipment_count
        FROM outbound_shipments ${where} ${andOrWhere} act_ship_to_name IS NOT NULL
@@ -163,6 +163,21 @@ async function computeTrends(
        ORDER BY period`,
       params
     ),
+    client.query(
+      `SELECT dock AS name,
+              ROUND(AVG(${safeTimeDiff('loading_end_date', 'loading_end_time', 'loading_start_date', 'loading_start_time')})::numeric, 1) AS avg_time
+       FROM outbound_shipments ${where} ${andOrWhere} dock IS NOT NULL
+       GROUP BY dock ORDER BY avg_time DESC LIMIT 15`,
+      params
+    ),
+    client.query(
+      `SELECT DATE_TRUNC('${safe_gran}', shipped_date)::date AS period,
+              COALESCE(SUM(pallets), 0) AS total_pallets
+       FROM outbound_shipments ${where} ${andOrWhere} shipped_date IS NOT NULL
+       GROUP BY DATE_TRUNC('${safe_gran}', shipped_date)
+       ORDER BY period`,
+      params
+    ),
   ]);
 
   return {
@@ -172,6 +187,8 @@ async function computeTrends(
     by_dock: byDock.rows,
     by_route: byRoute.rows,
     by_warehouse: byWarehouse.rows,
+    time_by_dock: timeByDock.rows,
+    pallet_trend: palletTrend.rows,
   };
 }
 

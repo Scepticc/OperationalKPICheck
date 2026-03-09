@@ -1,16 +1,39 @@
 'use client';
 
-import { Calendar } from 'lucide-react';
+import { useState } from 'react';
+import { Calendar, Download } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { getDateRangeOptions, cn } from '@/lib/utils';
 
 interface HeaderProps {
   title: string;
   showDatePicker?: boolean;
+  showExport?: boolean;
 }
 
-export default function Header({ title, showDatePicker = true }: HeaderProps) {
+export default function Header({ title, showDatePicker = true, showExport = true }: HeaderProps) {
   const { globalStartDate, globalEndDate, setGlobalDates } = useApp();
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const params = new URLSearchParams({ startDate: globalStartDate, endDate: globalEndDate });
+      const res = await fetch(`/api/export?${params}`);
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `operational-kpi-export-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export error:', err);
+    } finally {
+      setExporting(false);
+    }
+  }
   const presets = getDateRangeOptions();
 
   return (
@@ -62,6 +85,25 @@ export default function Header({ title, showDatePicker = true }: HeaderProps) {
               className="input h-7 py-0 text-xs w-[130px] tabular-nums"
             />
           </div>
+
+          {showExport && (
+            <>
+              <div className="w-px h-5 bg-gray-200" />
+              <button
+                onClick={handleExport}
+                disabled={exporting}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all border',
+                  exporting
+                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                    : 'bg-lime-50 text-lime-700 border-lime-200 hover:bg-lime-100'
+                )}
+              >
+                <Download className="w-3.5 h-3.5" />
+                {exporting ? 'Exporting...' : 'Export Excel'}
+              </button>
+            </>
+          )}
         </div>
       )}
     </header>

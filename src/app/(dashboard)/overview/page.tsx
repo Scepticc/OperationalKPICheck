@@ -41,8 +41,8 @@ export default function OverviewPage() {
 
   const outKpis = outData?.kpis as Record<string, { current: number | null; previous: number | null; change: number | null }> | undefined;
   const inKpis  = inData?.kpis  as Record<string, { current: number | null; previous: number | null; change: number | null }> | undefined;
-  const outCharts = outData?.charts as { trend: unknown[]; by_customer?: unknown[]; by_country?: unknown[] } | undefined;
-  const inCharts  = inData?.charts  as { trend: unknown[]; by_customer?: unknown[]; by_gate?: unknown[] } | undefined;
+  const outCharts = outData?.charts as { trend: unknown[]; by_country?: unknown[]; by_dock?: unknown[] } | undefined;
+  const inCharts  = inData?.charts  as { trend: unknown[]; by_gate?: unknown[] } | undefined;
 
   return (
     <div className="flex flex-col h-full">
@@ -82,8 +82,8 @@ export default function OverviewPage() {
                     title="Outbound Carton Trend"
                   />
                   <DistributionPieChart
-                    data={(outCharts.by_customer as { name: string; total_cartons: number }[] ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
-                    title="Outbound by Customer"
+                    data={(outCharts.by_country as { name: string; total_cartons: number }[] ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                    title="Outbound by Country"
                   />
                 </div>
               )}
@@ -120,8 +120,8 @@ export default function OverviewPage() {
                     title="Inbound Carton Trend"
                   />
                   <DistributionPieChart
-                    data={(inCharts.by_customer as { name: string; total_cartons: number }[] ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
-                    title="Inbound by Customer"
+                    data={(inCharts.by_gate as { name: string; total_cartons: number }[] ?? []).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                    title="Inbound by Gate"
                   />
                 </div>
               )}
