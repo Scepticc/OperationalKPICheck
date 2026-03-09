@@ -60,26 +60,27 @@ export default function CSVImporter({ type, label, description, accent }: CSVImp
       if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
 
       // Fix malformed CSV: some exports wrap each line in an extra pair of
-      // quotes (e.g. "Unloading Date,""Shipment"",""Container"",...").
-      // This causes PapaParse to treat the entire line as one quoted field
-      // because "" is an escaped quote in CSV. Fix by unwrapping each line:
-      // strip the outer quotes and unescape "" → ".
+      // quotes, which causes PapaParse to treat the entire line as one field.
+      // Detect by trying to parse the first line — if it gives only 1 field,
+      // try unwrapping the outer quotes and unescaping "" → ".
       text = text.replace(/\r\n|\r/g, '\n');
-      const lines = text.split('\n');
-      for (let li = 0; li < lines.length; li++) {
-        const line = lines[li];
-        // Detect: line starts with " and the content has ,""  patterns (escaped inner quotes)
-        if (line.startsWith('"') && line.includes(',""')) {
-          // Strip leading quote, strip trailing quote (and optional comma)
-          let fixed = line;
-          fixed = fixed.replace(/^"/, '');
-          fixed = fixed.replace(/",?\s*$/, '');
-          // Unescape doubled quotes back to single quotes
-          fixed = fixed.replace(/""/g, '"');
-          lines[li] = fixed;
+
+      const testParsed = Papa.parse(text.split('\n')[0] ?? '', { header: false });
+      const testFields = (testParsed.data[0] as string[]) ?? [];
+
+      if (testFields.length <= 1 && text.startsWith('"')) {
+        // Lines are wrapped in outer quotes — unwrap all lines
+        const lines = text.split('\n');
+        for (let li = 0; li < lines.length; li++) {
+          const line = lines[li];
+          if (line.startsWith('"')) {
+            let fixed = line.replace(/^"/, '').replace(/"?,?\s*$/, '');
+            fixed = fixed.replace(/""/g, '"');
+            lines[li] = fixed;
+          }
         }
+        text = lines.join('\n');
       }
-      text = lines.join('\n');
 
       // Parse cleaned CSV
       const parsed = Papa.parse<Record<string, string>>(text, {
