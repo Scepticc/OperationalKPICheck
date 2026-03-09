@@ -1,7 +1,8 @@
 'use client';
 
 import {
-  LineChart,
+  ComposedChart,
+  Bar,
   Line,
   XAxis,
   YAxis,
@@ -26,6 +27,8 @@ const dateFormats: Record<string, string> = {
   week:  "'W'w MMM",
   month: 'MMM yy',
 };
+
+const fmtAxis = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomTooltip({ active, payload, label, granularity }: any) {
@@ -67,6 +70,8 @@ export default function TrendChart({
     label: (() => { try { return format(parseISO(d.period), fmt); } catch { return d.period; } })(),
   }));
 
+  const hasShipments = data.some((d) => Number(d.shipment_count ?? 0) > 0);
+
   if (!data.length) {
     return (
       <div className="card p-5">
@@ -79,16 +84,21 @@ export default function TrendChart({
   return (
     <div className="card p-5">
       <p className="section-title mb-4">{title}</p>
-      <ResponsiveContainer width="100%" height={260}>
-        <LineChart data={formatted} margin={{ top: 12, right: 24, left: 0, bottom: 20 }}>
+      <ResponsiveContainer width="100%" height={280}>
+        <ComposedChart data={formatted} margin={{ top: 16, right: hasShipments ? 12 : 24, left: 0, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickMargin={8} angle={-35} textAnchor="end" interval="preserveStartEnd" height={40} />
-          <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v} width={48} domain={[0, 'auto']} allowDataOverflow={false} />
-          <Tooltip content={<CustomTooltip granularity={granularity} />} cursor={{ stroke: '#84cc16', strokeWidth: 1, strokeDasharray: '4 4', strokeOpacity: 0.3 }} />
+          <YAxis yAxisId="left" tick={{ fontSize: 10, fill: '#84cc16' }} axisLine={false} tickLine={false} tickFormatter={fmtAxis} width={48} domain={[0, (max: number) => Math.ceil(max * 1.15)]} />
+          {hasShipments && (
+            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: '#0f1a3e' }} axisLine={false} tickLine={false} tickFormatter={fmtAxis} width={48} domain={[0, (max: number) => Math.ceil(max * 1.15)]} />
+          )}
+          <Tooltip content={<CustomTooltip granularity={granularity} />} cursor={{ fill: 'rgba(132,204,22,0.06)' }} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10, color: '#6b7280' }} iconType="circle" iconSize={6} />
-          <Line type="monotone" dataKey={valueKey as string} name={valueLabel} stroke="#84cc16" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#84cc16', strokeWidth: 0 }} />
-          <Line type="monotone" dataKey="shipment_count" name="Shipments" stroke="#0f1a3e" strokeWidth={1.5} dot={false} activeDot={{ r: 3.5, fill: '#0f1a3e', strokeWidth: 0 }} strokeDasharray="5 3" />
-        </LineChart>
+          <Bar yAxisId="left" dataKey={valueKey as string} name={valueLabel} fill="#84cc16" opacity={0.75} radius={[3, 3, 0, 0]} barSize={12} />
+          {hasShipments && (
+            <Line yAxisId="right" type="monotone" dataKey="shipment_count" name="Shipments" stroke="#0f1a3e" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#0f1a3e', strokeWidth: 0 }} />
+          )}
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   );
