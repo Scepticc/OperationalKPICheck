@@ -46,7 +46,7 @@ export default function Sidebar() {
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-[13px] font-bold text-white leading-tight truncate">OpsKPI</p>
+            <p className="text-[13px] font-semibold text-white leading-tight truncate">OpsKPI</p>
             <p className="text-[9px] text-lime-400/60 tracking-[0.2em] uppercase mt-0.5">Control Center</p>
           </div>
         )}
@@ -66,7 +66,7 @@ export default function Sidebar() {
                 <div className={cn('pt-5 pb-2', collapsed ? 'px-2' : 'px-4')}>
                   {collapsed
                     ? <div className="h-px bg-navy-700/60" />
-                    : <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-navy-400/50">{item.section}</p>
+                    : <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-navy-400/50">{item.section}</p>
                   }
                 </div>
               )}

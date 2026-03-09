@@ -53,7 +53,7 @@ export default function KPICard({
 
       <div className="relative">
         <div className="flex items-start justify-between mb-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 leading-tight pr-2">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500 leading-tight pr-2">
             {title}
           </p>
           {icon && (
@@ -64,14 +64,14 @@ export default function KPICard({
         </div>
 
         <div className="mb-3">
-          <span className="text-2xl font-extrabold text-navy-900 tabular-nums leading-none tracking-tight">
+          <span className="text-2xl font-semibold text-navy-900 tabular-nums leading-none tracking-tight">
             {current !== null ? `${format(current)}${unit}` : '\u2014'}
           </span>
         </div>
 
         {change !== null ? (
           <div className={cn(
-            'inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full',
+            'inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full',
             isGood && 'bg-lime-50 text-lime-600',
             isBad  && 'bg-red-50 text-red-600',
             !isGood && !isBad && 'bg-gray-100 text-gray-500'

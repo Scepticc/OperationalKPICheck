@@ -26,7 +26,7 @@ export default function FilterBar({ filters, granularity, onGranularityChange, o
       <div className="flex flex-wrap items-center gap-2.5">
         <div className="flex items-center gap-1.5 shrink-0">
           <SlidersHorizontal className="w-3.5 h-3.5 text-navy-500" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-navy-500">Filters</span>
+          <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-navy-500">Filters</span>
         </div>
 
         <div className="w-px h-4 bg-gray-200 shrink-0" />
@@ -73,7 +73,7 @@ export default function FilterBar({ filters, granularity, onGranularityChange, o
                 key={g}
                 onClick={() => onGranularityChange(g)}
                 className={cn(
-                  'h-full px-3 text-[11px] font-semibold capitalize transition-all duration-200',
+                  'h-full px-3 text-[11px] font-medium capitalize transition-all duration-200',
                   granularity === g
                     ? 'bg-lime-500 text-white shadow-md shadow-lime-500/20'
                     : 'text-gray-500 hover:text-navy-700'

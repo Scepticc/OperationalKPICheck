@@ -39,7 +39,7 @@ export default function Header({ title, showDatePicker = true, showExport = true
   return (
     <header className="flex items-center justify-between px-6 py-3.5 bg-white border-b border-gray-200 shrink-0">
       <div className="flex items-center gap-3">
-        <h1 className="text-sm font-bold text-navy-900 tracking-tight">{title}</h1>
+        <h1 className="text-sm font-medium text-navy-900 tracking-tight">{title}</h1>
         <div className="h-4 w-px bg-gray-200" />
         <div className="w-1.5 h-1.5 rounded-full bg-lime-500 animate-pulse-slow" />
         <span className="text-[10px] text-lime-600 font-medium uppercase tracking-wider">Live</span>
@@ -55,7 +55,7 @@ export default function Header({ title, showDatePicker = true, showExport = true
                   key={p.label}
                   onClick={() => setGlobalDates(p.startDate, p.endDate)}
                   className={cn(
-                    'px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all',
+                    'px-2.5 py-1 rounded-md text-[11px] font-medium transition-all',
                     isActive
                       ? 'bg-lime-500 text-white shadow-md shadow-lime-500/20'
                       : 'text-gray-500 hover:text-navy-700 hover:bg-white'
@@ -93,7 +93,7 @@ export default function Header({ title, showDatePicker = true, showExport = true
                 onClick={handleExport}
                 disabled={exporting}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all border',
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all border',
                   exporting
                     ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                     : 'bg-lime-50 text-lime-700 border-lime-200 hover:bg-lime-100'
