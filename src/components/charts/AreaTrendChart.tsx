@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import {
   ComposedChart,
   Bar,
@@ -26,6 +27,12 @@ const dateFormats: Record<string, string> = {
   month: 'MMM yy',
 };
 
+function ceilNice(v: number): number {
+  if (v <= 0) return 10;
+  const order = Math.pow(10, Math.floor(Math.log10(v)));
+  return Math.ceil(v / order) * order;
+}
+
 const fmtAxis = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,7 +53,7 @@ function CustomTooltip({ active, payload, label, granularity }: any) {
             <span className="text-xs text-gray-500">{p.name}</span>
           </div>
           <span className="text-xs font-medium text-navy-900 tabular-nums">
-            {p.value.toLocaleString('en-US', { maximumFractionDigits: 1 })}
+            {p.value?.toLocaleString('en-US', { maximumFractionDigits: 1 }) ?? '—'}
           </span>
         </div>
       ))}
@@ -60,11 +67,20 @@ export default function AreaTrendChart({
   title = 'Shipment Volume',
 }: AreaTrendChartProps) {
   const fmt = dateFormats[granularity] ?? 'dd MMM';
-  const formatted = data.map((d) => ({
+  const formatted = useMemo(() => data.map((d) => ({
     ...d,
     period: d.period,
     label: (() => { try { return format(parseISO(d.period), fmt); } catch { return d.period; } })(),
-  }));
+  })), [data, fmt]);
+
+  const { leftMax, rightMax } = useMemo(() => {
+    const lMax = Math.max(0, ...data.map((d) => Number(d.shipment_count ?? 0)));
+    const rMax = Math.max(0, ...data.map((d) => Number(d.total_cartons ?? 0)));
+    return {
+      leftMax: ceilNice(lMax * 1.2),
+      rightMax: ceilNice(rMax * 1.2),
+    };
+  }, [data]);
 
   if (!data.length) {
     return (
@@ -82,11 +98,11 @@ export default function AreaTrendChart({
         <ComposedChart data={formatted} margin={{ top: 16, right: 12, left: 0, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickMargin={8} angle={-35} textAnchor="end" interval="preserveStartEnd" height={40} />
-          <YAxis yAxisId="left" tick={{ fontSize: 10, fill: '#84cc16' }} axisLine={false} tickLine={false} tickFormatter={fmtAxis} width={48} domain={[0, (max: number) => Math.ceil(max * 1.4)]} />
-          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: '#1a2553' }} axisLine={false} tickLine={false} tickFormatter={fmtAxis} width={48} domain={[0, (max: number) => Math.ceil(max * 1.4)]} />
+          <YAxis yAxisId="left" tick={{ fontSize: 10, fill: '#84cc16' }} axisLine={false} tickLine={false} tickFormatter={fmtAxis} width={48} domain={[0, leftMax]} allowDataOverflow={false} />
+          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: '#1a2553' }} axisLine={false} tickLine={false} tickFormatter={fmtAxis} width={48} domain={[0, rightMax]} allowDataOverflow={false} />
           <Tooltip content={<CustomTooltip granularity={granularity} />} cursor={{ fill: 'rgba(132,204,22,0.06)' }} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10, color: '#6b7280' }} iconType="circle" iconSize={6} />
-          <Bar yAxisId="left" dataKey="shipment_count" name="Shipments" fill="#84cc16" opacity={0.75} radius={[3, 3, 0, 0]} barSize={12} />
+          <Bar yAxisId="left" dataKey="shipment_count" name="Shipments" fill="#84cc16" opacity={0.75} radius={[3, 3, 0, 0]} barSize={14} />
           <Line yAxisId="right" type="monotone" dataKey="total_cartons" name="Cartons" stroke="#1a2553" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#1a2553', strokeWidth: 0 }} />
         </ComposedChart>
       </ResponsiveContainer>

@@ -10,6 +10,7 @@ import AreaTrendChart from '@/components/charts/AreaTrendChart';
 import CategoryBarChart from '@/components/charts/CategoryBarChart';
 import DistributionPieChart from '@/components/charts/DistributionPieChart';
 import TimeBarChart from '@/components/charts/TimeBarChart';
+import OperationsTimeTrend from '@/components/charts/OperationsTimeTrend';
 import { PageLoading } from '@/components/ui/LoadingSpinner';
 import { InboundKPIs, InboundCharts, FilterOptions } from '@/types';
 import { formatNumber, formatPercent, formatMinutes } from '@/lib/utils';
@@ -251,9 +252,9 @@ export default function InboundKPIsPage() {
               </div>
             </section>
 
-            {/* Charts */}
+            {/* Volume Trends */}
             <section>
-              <h2 className="section-title mb-3">Trends</h2>
+              <h2 className="section-title mb-3">Volume Trends</h2>
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <TrendChart
                   data={charts?.trend ?? []}
@@ -265,11 +266,29 @@ export default function InboundKPIsPage() {
                 <AreaTrendChart
                   data={charts?.trend ?? []}
                   granularity={inboundFilters.granularity ?? 'day'}
-                  title="Shipment & Carton Area"
+                  title="Shipment & Carton Combo"
+                />
+                <TrendChart
+                  data={(charts?.pallet_trend ?? []).map(d => ({ period: d.period, total_cartons: Number(d.total_pallets), shipment_count: 0 }))}
+                  granularity={inboundFilters.granularity ?? 'day'}
+                  title="Pallet Volume Trend"
+                  valueKey="total_cartons"
+                  valueLabel="Pallets"
+                />
+                <OperationsTimeTrend
+                  data={charts?.time_trend ?? []}
+                  granularity={inboundFilters.granularity ?? 'day'}
+                  title="Daily Operations Time (min)"
+                  series={[
+                    { key: 'avg_unloading', label: 'Unloading', color: '#8b5cf6', type: 'bar' },
+                    { key: 'avg_wait', label: 'Wait', color: '#f59e0b', type: 'bar' },
+                    { key: 'avg_dwell', label: 'Dwell', color: '#0f1a3e', type: 'line' },
+                  ]}
                 />
               </div>
             </section>
 
+            {/* Distribution */}
             <section>
               <h2 className="section-title mb-3">Distribution</h2>
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
@@ -281,24 +300,34 @@ export default function InboundKPIsPage() {
                   data={(charts?.by_gate ?? []).map(d => ({ name: d.name, value: Number(d.shipment_count) }))}
                   title="Shipment Share by Gate"
                 />
-                <TrendChart
-                  data={(charts?.pallet_trend ?? []).map(d => ({ period: d.period, total_cartons: Number(d.total_pallets), shipment_count: 0 }))}
-                  granularity={inboundFilters.granularity ?? 'day'}
-                  title="Pallet Volume Trend"
-                  valueKey="total_cartons"
-                  valueLabel="Pallets"
+                <DistributionPieChart
+                  data={(charts?.by_customer ?? []).slice(0, 10).map(d => ({ name: d.name, value: Number(d.total_cartons) }))}
+                  title="Carton Share by Customer"
                 />
               </div>
             </section>
 
+            {/* Breakdown */}
             <section>
               <h2 className="section-title mb-3">Breakdown</h2>
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <CategoryBarChart
+                  data={charts?.by_customer ?? []}
+                  title="Cartons by Customer"
+                  color="#059669"
+                  onBarClick={(name) => setInboundFilters({ customer: name })}
+                />
+                <CategoryBarChart
                   data={charts?.by_gate ?? []}
                   title="Cartons by Gate"
-                  color="#059669"
+                  color="#0891b2"
                   onBarClick={(name) => setInboundFilters({ gate: name })}
+                />
+                <CategoryBarChart
+                  data={charts?.by_warehouse ?? []}
+                  title="Cartons by Warehouse"
+                  color="#7c3aed"
+                  onBarClick={(name) => setInboundFilters({ warehouse: name })}
                 />
                 <TimeBarChart
                   data={charts?.time_by_gate ?? []}

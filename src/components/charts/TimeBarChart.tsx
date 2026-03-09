@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -9,6 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  ReferenceLine,
 } from 'recharts';
 import { TimeDataPoint } from '@/types';
 
@@ -21,6 +23,12 @@ interface TimeBarChartProps {
 }
 
 const BAR_COLORS = ['#a78bfa', '#8b5cf6', '#7c3aed', '#6d28d9', '#5b21b6', '#4c1d95', '#c4b5fd', '#ddd6fe', '#ede9fe', '#f5f3ff'];
+
+function ceilNice(v: number): number {
+  if (v <= 0) return 10;
+  const order = Math.pow(10, Math.floor(Math.log10(v)));
+  return Math.ceil(v / order) * order;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomTooltip({ active, payload, unit }: any) {
@@ -48,6 +56,13 @@ export default function TimeBarChart({
 }: TimeBarChartProps) {
   const filtered = data.filter((d) => d.avg_time != null).slice(0, maxItems);
 
+  const { xMax, avg } = useMemo(() => {
+    const vals = filtered.map((d) => Number(d.avg_time ?? 0));
+    const max = Math.max(0, ...vals);
+    const mean = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+    return { xMax: ceilNice(max * 1.2), avg: Math.round(mean * 10) / 10 };
+  }, [filtered]);
+
   if (!filtered.length) {
     return (
       <div className="card p-5">
@@ -62,12 +77,13 @@ export default function TimeBarChart({
   return (
     <div className="card p-5">
       <p className="section-title mb-4">{title}</p>
-      <ResponsiveContainer width="100%" height={Math.max(200, filtered.length * 28)}>
-        <BarChart data={filtered} layout="vertical" margin={{ top: 0, right: 8, left: 4, bottom: 0 }} barSize={10}>
+      <ResponsiveContainer width="100%" height={Math.max(220, filtered.length * 32)}>
+        <BarChart data={filtered} layout="vertical" margin={{ top: 4, right: 8, left: 4, bottom: 0 }} barSize={12}>
           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
-          <XAxis type="number" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} domain={[0, (max: number) => Math.ceil(max * 1.4)]} />
+          <XAxis type="number" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} domain={[0, xMax]} />
           <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} width={120} tickFormatter={(val: string) => val.length > 18 ? val.slice(0, 18) + '\u2026' : val} />
           <Tooltip content={<CustomTooltip unit={unit} />} cursor={{ fill: 'rgba(139,92,246,0.06)' }} />
+          <ReferenceLine x={avg} stroke="#f59e0b" strokeDasharray="4 4" strokeWidth={1.5} label={{ value: `Avg ${avg}m`, position: 'top', fontSize: 10, fill: '#f59e0b' }} />
           <Bar dataKey="avg_time" name="Avg Time" radius={[0, 4, 4, 0]}>
             {filtered.map((entry, index) => (
               <Cell key={entry.name} fill={BAR_COLORS[index % BAR_COLORS.length] ?? color} opacity={Number(entry.avg_time ?? 0) === maxValue ? 1 : 0.7} />

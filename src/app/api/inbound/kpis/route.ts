@@ -111,7 +111,7 @@ async function computeTrends(
   const safe_gran = ['day', 'week', 'month'].includes(granularity) ? granularity : 'day';
   const andOrWhere = where ? 'AND' : 'WHERE';
 
-  const [byCustomer, byGate, byWarehouse, trend, timeByGate, palletTrend] = await Promise.all([
+  const [byCustomer, byGate, byWarehouse, trend, timeByGate, palletTrend, timeTrend] = await Promise.all([
     client.query(
       `SELECT customer AS name, COALESCE(SUM(carton_count),0) AS total_cartons, COUNT(DISTINCT shipment) AS shipment_count
        FROM inbound_shipments ${where} ${andOrWhere} customer IS NOT NULL
@@ -154,6 +154,16 @@ async function computeTrends(
        ORDER BY period`,
       params
     ),
+    client.query(
+      `SELECT DATE_TRUNC('${safe_gran}', unloading_date)::date AS period,
+              ROUND(AVG(${safeTimeDiff('unloading_end_date', 'unloading_end_time', 'unloading_start_date', 'unloading_start_time')})::numeric, 1) AS avg_unloading,
+              ROUND(AVG(${safeTimeDiff('unloading_start_date', 'unloading_start_time', 'gate_in_date', 'gate_in_time')})::numeric, 1) AS avg_wait,
+              ROUND(AVG(${safeTimeDiff('gate_out_date', 'gate_out_time', 'gate_in_date', 'gate_in_time')})::numeric, 1) AS avg_dwell
+       FROM inbound_shipments ${where} ${andOrWhere} unloading_date IS NOT NULL
+       GROUP BY DATE_TRUNC('${safe_gran}', unloading_date)
+       ORDER BY period`,
+      params
+    ),
   ]);
 
   return {
@@ -163,6 +173,7 @@ async function computeTrends(
     by_warehouse: byWarehouse.rows,
     time_by_gate: timeByGate.rows,
     pallet_trend: palletTrend.rows,
+    time_trend: timeTrend.rows,
   };
 }
 
