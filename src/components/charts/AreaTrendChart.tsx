@@ -75,8 +75,8 @@ export default function AreaTrendChart({
   return (
     <div className="card p-5">
       <p className="section-title mb-4">{title}</p>
-      <ResponsiveContainer width="100%" height={220}>
-        <AreaChart data={formatted} margin={{ top: 4, right: 24, left: 0, bottom: 20 }}>
+      <ResponsiveContainer width="100%" height={260}>
+        <AreaChart data={formatted} margin={{ top: 12, right: 24, left: 0, bottom: 20 }}>
           <defs>
             <linearGradient id="gradLime" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#84cc16" stopOpacity={0.25}/>
@@ -89,7 +89,7 @@ export default function AreaTrendChart({
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickMargin={8} angle={-35} textAnchor="end" interval="preserveStartEnd" height={40} />
-          <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v} width={48} />
+          <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v} width={48} domain={[0, 'auto']} allowDataOverflow={false} />
           <Tooltip content={<CustomTooltip granularity={granularity} />} cursor={{ stroke: '#84cc16', strokeWidth: 1, strokeDasharray: '4 4', strokeOpacity: 0.3 }} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10, color: '#6b7280' }} iconType="circle" iconSize={6} />
           <Area type="monotone" dataKey="shipment_count" name="Shipments" stroke="#84cc16" strokeWidth={2} fill="url(#gradLime)" dot={false} activeDot={{ r: 4, fill: '#84cc16', strokeWidth: 0 }} />
