@@ -76,7 +76,7 @@ export default function AreaTrendChart({
     <div className="card p-5">
       <p className="section-title mb-4">{title}</p>
       <ResponsiveContainer width="100%" height={220}>
-        <AreaChart data={formatted} margin={{ top: 4, right: 8, left: 0, bottom: 20 }}>
+        <AreaChart data={formatted} margin={{ top: 4, right: 24, left: 0, bottom: 20 }}>
           <defs>
             <linearGradient id="gradLime" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#84cc16" stopOpacity={0.25}/>
